@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js / examples</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <link rel="stylesheet" href="index_mod.css">﻿
+	</head>
+	<body>
+		<div id="panel" class="collapsed">
+			<h1><a href="http://threejs.org">three.js</a> / examples</h1>
+			<a id="expandButton" href="#">
+				<span></span>
+				<span></span>
+				<span></span>
+			</a>
+			<div class="filterBlock" >
+				<input type="text" id="filterInput" placeholder="Type to filter"/>
+				<a href="#" id="clearFilterButton" >x</a>
+			</div>
+			<div id="content"></div>
+		</div>
+		<iframe id="viewer" name="viewer" allowfullscreen allowvr onmousewheel=""></iframe>
+		<script src="files.js"></script>
+		<script src="index_mod.js"></script>
+	</body>
+</html>
