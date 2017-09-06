@@ -1,3 +1,4 @@
+"use strict";
 
 //function dist2( x,y, x0,y0  ){ dx=x-x0 + dy*dy return dx*dx + dy*dy };
 function norm2_2D( x,y ){ return x*x + y*y };

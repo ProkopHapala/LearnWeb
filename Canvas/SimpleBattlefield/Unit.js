@@ -1,3 +1,4 @@
+"use strict";
 
 // ===========================
 //        GunType
@@ -58,8 +59,8 @@ var UnitType = function( name ){
 
 UnitType.prototype.report = function(){
     //console.log( this.type.name, this.pos );
-    s_gun1 = "gun1========\n"+this.gun1.report()+"max_ammo "+  this.max_ammo_1 +"\n";
-    s_gun2 = "gun2========\n";
+    var s_gun1 = "gun1========\n"+this.gun1.report()+"max_ammo "+  this.max_ammo_1 +"\n";
+    var s_gun2 = "gun2========\n";
     if( this.gun2 ){  s_gun2+=this.gun2.report()+"max_ammo "+  this.max_ammo_2 +"\n"; }
     return  "name          : "+  this.name       +"\n"+ 
             "cost    [$]   : "+  this.cost       +"\n"+ 

@@ -1,4 +1,8 @@
+"use strict";
+
 // from  https://codepen.io/dissimulate/pen/KrAwx
+
+
 
 window.requestAnimFrame =
     window.requestAnimationFrame ||
@@ -129,15 +133,15 @@ window.onload = function () {
     canvas.width  = 1024;
     canvas.height = 512;
 
-    boundsx = canvas.width  - 1;
-    boundsy = canvas.height - 1;
+    //boundsx = canvas.width  - 1;
+    //boundsy = canvas.height - 1;
     
     canvas.onmousedown = function (e) {
         mouse.button  = e.which;
         mouse.down    = true;
         var rect      = canvas.getBoundingClientRect();
-        px            = e.clientX - rect.left,
-        py            = e.clientY - rect.top,
+        var px            = e.clientX - rect.left;
+        var py            = e.clientY - rect.top;
         mouse.x = screen.pix2x( px );
         mouse.y = screen.pix2x( py );
         mouse.begX = mouse.x;
@@ -163,8 +167,8 @@ window.onload = function () {
     
     canvas.onmousemove = function (e) {
         var rect  = canvas.getBoundingClientRect();
-        px = e.clientX - rect.left;
-        py = e.clientY - rect.top;
+        var px = e.clientX - rect.left;
+        var py = e.clientY - rect.top;
         mouse.x = screen.pix2x( px );
         mouse.y = screen.pix2x( py );
         //console.log( "onmousemove" );
