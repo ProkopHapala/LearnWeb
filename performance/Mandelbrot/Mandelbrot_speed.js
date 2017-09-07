@@ -1,6 +1,8 @@
 // based on https://rosettacode.org/wiki/Mandelbrot_set#JavaScript
 // from herehttps://gist.github.com/winduptoy/a1aa09c3499e09edbd33
 
+"use strict";
+
 /*
 Firefox:
 mandelbrot               Time   76.630 [ms]  1169.281 [ns/pix]   4.541 [ns/iter] 
