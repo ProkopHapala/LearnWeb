@@ -40,11 +40,11 @@ Vec2.prototype = {
     set_mulv:   function( a, b ){ this.x=a.x*b.x; this.y=a.y*b.y; },
     set_divv:   function( a, b ){ this.x=a.x/b.x; this.y=a.y/b.y; },
 
-    add_mulf:   function( a, f   ){ this.x+=a.x*f;        this.y+=a.y*f;       },
-    add_mulv:   function( a, b   ){ this.x+=a.x*b.x;      this.y+=a.y*b.y;     },
-    sub_mulv:   function( a, b   ){ this.x-=a.x*b.x;      this.y-=a.y*b.y;     },
+    add_mulf:   function( a, f    ){ this.x+=a.x*f;        this.y+=a.y*f;       },
+    add_mulv:   function( a, b    ){ this.x+=a.x*b.x;      this.y+=a.y*b.y;     },
+    sub_mulv:   function( a, b    ){ this.x-=a.x*b.x;      this.y-=a.y*b.y;     },
     add_mulvf:  function( a, b, f ){ this.x+=a.x*b.x*f;    this.y+=a.y*b.y*f;   },
-    set_add_mul:function( a, b, f ){ this.x =a.x + f*b.x;  this.y =a.y + f*b.y; },
+    set_add_mulf:function( a, b, f ){ this.x =a.x + f*b.x;  this.y =a.y + f*b.y; },
 
     set_lerp:   function( a, b, f      ){ this.x = a.x+(b.x-a.x)*f;  this.y = a.y+(b.y-a.y)*f; },
     set_lincomb:function( fa, a, fb, b ){ this.x = fa*a.x + fb*b.x;  this.y = fa*a.y + fb*b.y; },
