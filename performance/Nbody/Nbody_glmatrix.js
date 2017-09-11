@@ -3,40 +3,31 @@
 
 "use strict";
 
-var p0     = [250.0,250.0];
-
-function set ( f      , out ){ out[0]=f;           out[1]=f; };
-function mulf( a, f   , out ){ out[0]=a[0]*f;      out[1]=a[1]*f; };
-function sub ( a, b,    out ){ out[0]=a[0]-b[0];   out[1]=a[1]-b[1];   };
-function mad ( a, b, f, out ){ out[0]=a[0]+b[0]*f; out[1]=a[1]+b[1]*f; };
-function dot ( a, b,    out ){ return a[0]*b[0] + a[1]*b[1]; };
-function acc ( a, b    ){ a[0]+=b[0];   a[1]+=b[1];   };
-function accf( a, b, f ){ a[0]+=b[0]*f; a[1]+=b[1]*f; };
+var p0     = vec2.fromValues(250.0,250.0);
 
 function move( poss, vels, dt ){
     var n = poss.length;
-    var d  = [0.0,0.0];
-    var f  = [0.0,0.0];
+    var d  = vec2.create();
+    var f  = vec2.create();
     var K  = -0.0001;
     var R3SAFE = 1e+2;
     for( var i=0; i<n; i++ ){
         var pi = poss[i]; 
-        //set(0.0,f);
-        sub( pi, p0, d);
-        mulf( d,K, f);
+        vec2.subtract(d, pi, p0);
+        vec2.scale(f, d, K);
         for( var j=0; j<n; j++ ){
             if( i==j ) continue;
             var pj = poss[j];
-            sub( pi, pj, d);
-            var r2 = dot(d,d);
+            vec2.subtract(d, pi, pj);
+            var r2 = vec2.squaredLength(d);
             var fr = -1.0/( r2*Math.sqrt(r2) + R3SAFE );
-            accf( f, d, fr );
+            vec2.scaleAndAdd( f, f, d, fr);
             //console.log( i, j, d, f );
         }
         //console.log( f );
         var vel = vels[i];
-        accf( vel, f,  dt );
-        accf( pi, vel, dt );
+        vec2.scaleAndAdd( vel, vel,   f, dt);
+        vec2.scaleAndAdd( pi,   pi, vel, dt);
     }
 }
 
@@ -123,9 +114,9 @@ window.onload = function () {
 
     var N = 100;
     for(var i=0; i<N; i++){
-        //var pos = [ Math.random()*500, Math.random()*500 ]; 
-        var pos = [ 250+Math.cos(i)*250, 250+Math.sin(i)*250 ]; 
-        var vel = [ 0.0, 0.0 ]; 
+        //var pos = vec2.fromValues( Math.random()*500, Math.random()*500 );
+        var pos = vec2.fromValues( 250+Math.cos(i)*250, 250+Math.sin(i)*250 ); 
+        var vel = vec2.create();
         poss.push( pos );
         vels.push( vel );
     }
