@@ -1,5 +1,7 @@
 "use strict";
 
+// https://stackoverflow.com/questions/13916066/speed-up-the-drawing-of-many-points-on-a-html5-canvas-element
+
 var Camera = function( rot, pos, wh, z_screen, ctx ){
     this.ctx     = ctx;
     this.z_screen = z_screen;
@@ -27,6 +29,18 @@ Camera.prototype.line = function( p1, p2 ){
     this.to2D( p1, p2d );  ctx.moveTo( p2d[0], p2d[1] ); //console.log( "1 ", p2d );
     this.to2D( p2, p2d );  ctx.lineTo( p2d[0], p2d[1] ); //console.log( "2 ", p2d );
 }
+
+Camera.prototype.point = function( p1, sz ){
+    let p2d = this.tmp2d;
+    this.to2D( p1, p2d );
+    let x = Math.round(p2d[0]);
+    let y = Math.round(p2d[1]);
+    //console.log( p1, p2d, x,y );
+    ctx.rect(x-sz,y-sz,2*sz,2*sz);
+    //ctx.stroke(); 
+    ctx.fill(); 
+}
+
 
 function to2D( p3, p2, z_screen ){
     let sc = z_screen/p3[2];

@@ -1,5 +1,23 @@
 "use strict";
 
+glMatrix.ARRAY_TYPE = Float64Array;
+
+// ================
+//      Material
+// ================
+
+var Material = function( Kpull, Kpush, Spull, Spush, density ){
+    this.Spull  = Kpull; 
+    this.Spush  = Kpush;
+    this.Kpull  = Spull; 
+    this.Kpush  = Spush;
+    this.density = density;
+}
+
+// ================
+//      Node
+// ================
+
 var Node = function( id, pos, mass ){
     this.id    = id; 
     this.mass  = mass;
@@ -8,26 +26,38 @@ var Node = function( id, pos, mass ){
     this.force = vec3.create();
 }
 
-var Material = function( Kpull, Kpush, Spull, Spush ){
-    this.Spull  = Kpull; 
-    this.Spush  = Kpush;
-    this.Kpull  = Spull; 
-    this.Kpush  = Spush;
-}
+// ================
+//      Stick
+// ================
 
-var Stick = function( i,j, S, l0, mat ){
+var Stick = function( i,j, mat, S, l0 ){
     this.i = i | 0;
     this.j = j | 0;
     this.mat = mat;
     this.S  = S;
     this.l  = l0;
     this.l0 = l0;
-    this.broken = 0;
+    this.broken = true;
 }
+
+Stick.prototype.autoL0  = function( nodes ){
+    this.l0 = vec3.dist( nodes[this.i].pos, nodes[this.j].pos );
+}
+
+Stick.prototype.addMass = function( nodes ){
+    let mass = 0.5 * this.S * this.l0 * this.mat.density;
+    nodes[this.i].mass += mass;
+    nodes[this.j].mass += mass;
+}
+
+// ================
+//      Truss
+// ================
 
 var Truss = function( ){
     this.nodes  = [];
     this.sticks = [];
+    this.blocks = [];
 }
 
 Truss.prototype.evalStickForces = function(){
@@ -58,6 +88,15 @@ Truss.prototype.evalStickForces = function(){
     }
 }
 
+Truss.prototype.prepareSticks = function(){
+    let nodes = this.nodes;
+    for( let i=0; i<sticks.length; i++ ){
+        let stick = this.sticks[i];
+        stick.autoL0 (nodes);
+        stick.addMass(nodes);
+    }
+}
+
 Truss.prototype.clenForce = function(){
     for( let i=0; i<nodes.length; i++ ){
         this.nodes[i].force.set(out, 0.0, 0.0, 0.0);
@@ -80,6 +119,69 @@ Truss.prototype.upadate = function( dt ){
     this.moveNodes( nodes, dt );
 }
 
+Truss.prototype.makeStick = function( i, j, S, mat ){
+    let l0 = vec3.dist( this.nodes[i].pos, this.nodes[j].pos ); 
+    sticks.push( new Stick( i, j, S, l0, mat ) );
+}
 
+Truss.prototype.makeSolid = function( verts, edges, mass, kind  ){
+    for( let i=0; i<verts.length; i++ ){
+        this.nodes.push( new Node( i, vec3.clone( verts[i] ), mass ) );
+    }
+    for( let i=0; i<edges.length; i++ ){
+        let ed = edges[i];
+        this.sticks.push( new Stick( ed[0], ed[1], kind.mat, kind.S, 1.0 ) );
+    }
+}
 
+Truss.prototype.makeGirder_1 = function( p0, p1, up, n, width,   kind_long, kind_perp, kind_zigIn, kind_zigOut  ){
+    //let kind_long   = 0;
+    //let kind_perp   = 1;
+    //let kind_zigIn  = 2;
+    //let kind_zigOut = 3;
+    let dir = vec3.create();
+    vec3.sub( dir, p1, p0 );
+    let length = vec3.length( dir );
+    vec3.scaleAndAdd( up, up, dir, vec3.dot(up,dir)/-length ); 
+    vec3.normalize(up,up);
+    let side = vec3.create(); vec3.cross ( side, dir, up );
+    let dl = length/(2*n + 1);
+    let dnp = 4;
+    let nodes  = this.nodes;
+    let sticks = this.sticks;
+    let i00 = this.nodes.length;
+    this.blocks.push( [i00,sticks.length] );
+    for (let i=0; i<n; i++){
+        let i01=i00+1; 
+        let i10=i00+2; 
+        let i11=i00+3;
+        let lt = dl*(1+2*i );
+        let vtmp;
+        let mass = 0.001;
+        vtmp = vec3.create(); vec3.lincomb( vtmp, p0, side, dir, 1.0, -width, lt    ); nodes.push( new Node( i00, vtmp, mass ) ); //points.push( p0 + side*-width + dir*(dl*(1+2*i  )) );
+        vtmp = vec3.create(); vec3.lincomb( vtmp, p0, side, dir, 1.0, +width, lt    ); nodes.push( new Node( i01, vtmp, mass ) ); //points.push( p0 + side*+width + dir*(dl*(1+2*i  )) );
+        vtmp = vec3.create(); vec3.lincomb( vtmp, p0, up,   dir, 1.0, -width, lt+dl ); nodes.push( new Node( i10, vtmp, mass ) ); //points.push( p0 + up  *-width + dir*(dl*(1+2*i+1)) );
+        vtmp = vec3.create(); vec3.lincomb( vtmp, p0, up,   dir, 1.0, -width, lt+dl ); nodes.push( new Node( i11, vtmp, mass ) ); //points.push( p0 + up  *+width + dir*(dl*(1+2*i+1)) );
+        
+        console.log( i, nodes[i00].pos, nodes[i01].pos, nodes[i10].pos, nodes[i11].pos );
+        
+        sticks.push( new Stick( i00,i01, kind_perp .mat, kind_perp .S, 1.0 ) );  // edges .push( (TrussEdge){i00,i01,kind_perp}  );
+        sticks.push( new Stick( i10,i11, kind_perp .mat, kind_perp .S, 1.0 ) );  // edges .push( (TrussEdge){i10,i11,kind_perp}  );
+        sticks.push( new Stick( i00,i10, kind_zigIn.mat, kind_zigIn.S, 1.0 ) );  // edges .push( (TrussEdge){i00,i10,kind_zigIn} );
+        sticks.push( new Stick( i00,i11, kind_zigIn.mat, kind_zigIn.S, 1.0 ) );  // edges .push( (TrussEdge){i00,i11,kind_zigIn} );
+        sticks.push( new Stick( i01,i10, kind_zigIn.mat, kind_zigIn.S, 1.0 ) );  // edges .push( (TrussEdge){i01,i10,kind_zigIn} );
+        sticks.push( new Stick( i01,i11, kind_zigIn.mat, kind_zigIn.S, 1.0 ) );  // edges .push( (TrussEdge){i01,i11,kind_zigIn} );
+        if( i<(n-1) ){
+            sticks.push( new Stick( i10,i00+dnp, kind_perp.mat, kind_perp.S, 1.0 ) ); //edges.push( (TrussEdge){i10,i00+dnp,kind_zigOut} );
+            sticks.push( new Stick( i10,i01+dnp, kind_perp.mat, kind_perp.S, 1.0 ) ); //edges.push( (TrussEdge){i10,i01+dnp,kind_zigOut} );
+            sticks.push( new Stick( i11,i00+dnp, kind_perp.mat, kind_perp.S, 1.0 ) ); //edges.push( (TrussEdge){i11,i00+dnp,kind_zigOut} );
+            sticks.push( new Stick( i11,i01+dnp, kind_perp.mat, kind_perp.S, 1.0 ) ); //edges.push( (TrussEdge){i11,i01+dnp,kind_zigOut} );
+            sticks.push( new Stick( i00,i00+dnp, kind_perp.mat, kind_perp.S, 1.0 ) ); //edges.push( (TrussEdge){i00,i00+dnp,kind_long} );
+            sticks.push( new Stick( i01,i01+dnp, kind_perp.mat, kind_perp.S, 1.0 ) ); //edges.push( (TrussEdge){i01,i01+dnp,kind_long} );
+            sticks.push( new Stick( i10,i10+dnp, kind_perp.mat, kind_perp.S, 1.0 ) ); //edges.push( (TrussEdge){i10,i10+dnp,kind_long} );
+            sticks.push( new Stick( i11,i11+dnp, kind_perp.mat, kind_perp.S, 1.0 ) ); //edges.push( (TrussEdge){i11,i11+dnp,kind_long} );
+        }
+        i00+=dnp;
+    }
+}
 
