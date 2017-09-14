@@ -71,13 +71,12 @@ function initScene() {
     
     Globals.truss1.makeSolid( Octahedron.verts, Octahedron.edges, 1.0, {S:1.0,mat:mater} );
     
-    /*
     let kind_long   = {S:1.0,mat:mater};
     let kind_perp   = {S:1.0,mat:mater};
     let kind_zigIn  = {S:1.0,mat:mater};
     let kind_zigOut = {S:1.0,mat:mater};
     Globals.truss1.makeGirder_1( vec3.fromValues(0.0,0.0,0.0), vec3.fromValues(10.0,5.0,0.0), vec3.fromValues(0.0,1.0,0.0), 6, 2.0, kind_long, kind_perp, kind_zigIn, kind_zigOut );
-    */
+    
 
     /*
     let nodes  = Globals.truss1.nodes;
@@ -104,19 +103,22 @@ function initScene() {
 
 function keyPressed(event) {
     var key = event.keyCode;
-    console.log(key);
+    //console.log(key);
     let drot = 0.1;
     switch(key) {
-        case 38: ﻿mat3.rotateAxisAngle( camera.rot,camera.rot, vec3.fromValues(1.0,0.0,0.0),  drot); break;
-        case 40: ﻿mat3.rotateAxisAngle( camera.rot,camera.rot, vec3.fromValues(1.0,0.0,0.0), -drot); break;
-        case 37: ﻿mat3.rotateAxisAngle( camera.rot,camera.rot, vec3.fromValues(0.0,1.0,0.0),  drot); break;
-        case 39: ﻿mat3.rotateAxisAngle( camera.rot,camera.rot, vec3.fromValues(0.0,1.0,0.0), -drot); break;
+        case 38: mat3.rotateAxisAngle( camera.rot,camera.rot, [1.0,0.0,0.0],  drot); break;
+        case 40: mat3.rotateAxisAngle( camera.rot,camera.rot, [1.0,0.0,0.0], -drot); break;
+        //case 37: mat3.rotateAxisAngle( camera.rot,camera.rot, vec3.fromValues(0.0,1.0,0.0),  drot); break;
+        //case 39: mat3.rotateAxisAngle( camera.rot,camera.rot, vec3.fromValues(0.0,1.0,0.0), -drot); break;
+        case 37: vec3.rotateAxisAngle( camera.pos, camera.pos, [0.0,1.0,0.0],  drot); camera.lookAt([0.0,0.0,0.0]); break;
+        case 39: vec3.rotateAxisAngle( camera.pos, camera.pos, [0.0,1.0,0.0], -drot); camera.lookAt([0.0,0.0,0.0]); break;
         //case 38: mat3.rotate( camera.rot, camera.rot,   drot); break;
         //case 40: mat3.rotate( camera.rot, camera.rot,  -drot); break;
         //case 37: mat3.rotate( camera.rot, camera.rot,   drot); break;
         //case 39: mat3.rotate( camera.rot, camera.rot,  -drot); break;
     } 
-    console.log( camera.rot );
+    //console.log( camera.pos  );
+    //console.log( camera.rot );
 }
 
 window.onload = function () {
@@ -142,7 +144,7 @@ window.onload = function () {
     let camPos = vec3.fromValues( 0.0,0.0, -20.0 );
     let camRot = mat3.create();
     let wh     = vec2.fromValues( canvas.width, canvas.height );
-    camera = new Camera( camRot, camPos, wh, 100.0, ctx );
+    camera = new Camera( camRot, camPos, wh, 500.0, ctx );
 
     initScene();
     updateScene();

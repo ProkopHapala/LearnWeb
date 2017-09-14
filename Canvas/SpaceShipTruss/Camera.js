@@ -13,6 +13,15 @@ var Camera = function( rot, pos, wh, z_screen, ctx ){
     this.tmp3d   = vec3.create();
 }
 
+Camera.prototype.lookAt = function( p ){
+    //let dir = vec3d_temps[0];
+    //let up  = vec3d_temps[1];
+    let dir = [], up = [];
+    vec3.add    ( dir, p, this.pos );
+    mat3.getRow ( this.rot, 1, up       );
+    mat3.setDirUp( this.rot, dir, up );
+}
+
 Camera.prototype.to2D = function( p3, p2 ){
     let tmp = this.tmp3d;
     vec3.subtract     ( tmp, p3,  this.pos );
@@ -40,7 +49,6 @@ Camera.prototype.point = function( p1, sz ){
     //ctx.stroke(); 
     ctx.fill(); 
 }
-
 
 function to2D( p3, p2, z_screen ){
     let sc = z_screen/p3[2];

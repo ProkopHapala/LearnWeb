@@ -139,18 +139,21 @@ Truss.prototype.makeGirder_1 = function( p0, p1, up, n, width,   kind_long, kind
     //let kind_perp   = 1;
     //let kind_zigIn  = 2;
     //let kind_zigOut = 3;
-    let dir = vec3.create();
+    up   = vec3.clone(up);
+    let side = vec3.create();
+    let dir  = vec3.create();
     vec3.sub( dir, p1, p0 );
-    let length = vec3.length( dir );
-    vec3.scaleAndAdd( up, up, dir, vec3.dot(up,dir)/-length ); 
-    vec3.normalize(up,up);
-    let side = vec3.create(); vec3.cross ( side, dir, up );
-    let dl = length/(2*n + 1);
+    let l   = vec3.makeOrthoNormal(dir,up,side);
+    let dl  = l/(2*n + 1);
     let dnp = 4;
     let nodes  = this.nodes;
     let sticks = this.sticks;
     let i00 = this.nodes.length;
     this.blocks.push( [i00,sticks.length] );
+
+    //console.log( " dir, up, side ", dir, up, side );
+    //console.log( "dots ", vec3.dot(dir,dir),  vec3.dot(up,up),  vec3.dot(side,side),     vec3.dot(dir,up), vec3.dot(dir,side), vec3.dot(up,side) );
+    //console.log( dl );
     for (let i=0; i<n; i++){
         let i01=i00+1; 
         let i10=i00+2; 
@@ -161,9 +164,9 @@ Truss.prototype.makeGirder_1 = function( p0, p1, up, n, width,   kind_long, kind
         vtmp = vec3.create(); vec3.lincomb( vtmp, p0, side, dir, 1.0, -width, lt    ); nodes.push( new Node( i00, vtmp, mass ) ); //points.push( p0 + side*-width + dir*(dl*(1+2*i  )) );
         vtmp = vec3.create(); vec3.lincomb( vtmp, p0, side, dir, 1.0, +width, lt    ); nodes.push( new Node( i01, vtmp, mass ) ); //points.push( p0 + side*+width + dir*(dl*(1+2*i  )) );
         vtmp = vec3.create(); vec3.lincomb( vtmp, p0, up,   dir, 1.0, -width, lt+dl ); nodes.push( new Node( i10, vtmp, mass ) ); //points.push( p0 + up  *-width + dir*(dl*(1+2*i+1)) );
-        vtmp = vec3.create(); vec3.lincomb( vtmp, p0, up,   dir, 1.0, -width, lt+dl ); nodes.push( new Node( i11, vtmp, mass ) ); //points.push( p0 + up  *+width + dir*(dl*(1+2*i+1)) );
+        vtmp = vec3.create(); vec3.lincomb( vtmp, p0, up,   dir, 1.0, +width, lt+dl ); nodes.push( new Node( i11, vtmp, mass ) ); //points.push( p0 + up  *+width + dir*(dl*(1+2*i+1)) );
         
-        console.log( i, nodes[i00].pos, nodes[i01].pos, nodes[i10].pos, nodes[i11].pos );
+        //console.log( i, nodes[i00].pos, nodes[i01].pos, nodes[i10].pos, nodes[i11].pos );
         
         sticks.push( new Stick( i00,i01, kind_perp .mat, kind_perp .S, 1.0 ) );  // edges .push( (TrussEdge){i00,i01,kind_perp}  );
         sticks.push( new Stick( i10,i11, kind_perp .mat, kind_perp .S, 1.0 ) );  // edges .push( (TrussEdge){i10,i11,kind_perp}  );
