@@ -1,5 +1,62 @@
 ﻿"use strict";
 
+
+// ========================
+//   fastmath
+// ========================
+
+function trashold_cub( x, x1, x2 ){
+	if      (x<x1){ return 0.0; }
+	else if (x>x2){ return 1.0; }
+	else    { let a =(x-x1)/(x2-x1); return a*a*( 3 - 2*a );  };
+}
+
+function quadratic_roots( a, b, c,  roots ){
+    let D     = b*b - 4*a*c;
+    if (D < 0) return false;
+    let sqrtD = sqrt( D );
+    let ia    = -0.5/a;
+    roots[0]     = ( b - sqrtD )*ia;
+    roots[1]     = ( b + sqrtD )*ia;
+    return true;
+}
+
+// ========================
+//   2D
+// ========================
+
+vec2.mul_complex=function( out, a, b ){
+    let ax=a[0]; let ay=a[1];   let bx=b[0]; let by=b[1];
+    out[0] = ax*bx - ay*by;     out[1] = ax*by + ay*bx;
+}
+
+vec2.perp   = function( out, a ){ out[0] = -a[1]; out[1] = a[0]; }
+vec2.fcross = function( a, b   ){ return a[0]*b[1] - a[1]*b[0];  };
+
+vec2.drot = function( out, v, a ){
+    let a2   = a*a;
+    var ca,sa;
+    if( a2<0.01 ){
+	    ca   =       1 - a2*( 0.50000000000 - 0.04166666666*a2 )   ;
+	    sa   = a * ( 1 - a2*( 0.16666666666 - 0.00833333333*a2 ) ) ;
+	}else{
+	    ca = Math.cos();
+	    sa = Math.sin();
+	}
+	let vx=v[0]; let vy=v[1];
+	out[0] = vx*ca - vy*sa;     out[1] = vx*sa + vy*ca;
+}
+
+vec2.sincos_taylor2 = function( out, a ){
+	let a2  = a*a;
+	out[0]  =       1 - a2*( 0.50000000000 - 0.04166666666*a2 )   ;
+	out[1]  = a * ( 1 - a2*( 0.16666666666 - 0.00833333333*a2 ) ) ;
+}
+
+// ========================
+//   3D
+// ========================
+
 var vec3temp = vec3.create();
 
 var vec3_axis   = { x:vec3.fromValues(1.0,0.0,0.0), y:vec3.fromValues(0.0,1.0,0.0), z:vec3.fromValues(0.0,0.0,1.0) };
