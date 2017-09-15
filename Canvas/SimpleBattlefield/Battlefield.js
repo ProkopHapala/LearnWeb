@@ -22,6 +22,8 @@ window.requestAnimFrame =
 var army1 = new Army( "Army1" ); army1.color="#f00";
 var army2 = new Army( "Army2" ); army2.color="#00f";
 
+var hexRuler1 = new HexRuler( 1.0, 0, 0 );
+
 var Globals = {
     thisArmy: army1,
     thisUnit: null,
@@ -118,11 +120,20 @@ Army.prototype.draw = function(){
 function drawScene(){
     army1.draw();
     army2.draw();
+    
+    //hexRuler1.drawHexSamples( ctx, 128, 128, 0.025, 2 );
+    
+    hexRuler1.hexIndex( mouse.x, mouse.y );
+    hexRuler1.drawHexagon( hexRuler1.ia, hexRuler1.ib );
 }
 
 function initScene() {
     army1.addUnitLine( 5, new Vec2(10.0,20.0),  new Vec2(100.0,20.0),  Infantry, 10 );
     army2.addUnitLine( 5, new Vec2(10.0,200.0), new Vec2(100.0,200.0), Infantry, 10 );
+    
+    
+    drawScene();
+    
     updateScene();
 }
 
@@ -172,6 +183,7 @@ window.onload = function () {
         mouse.x = screen.pix2x( px );
         mouse.y = screen.pix2x( py );
         //console.log( "onmousemove" );
+        
         if( Globals.thisUnit  ){
             //console.log( "onmousemove Globals.thisUnit " );
             if( Globals.thisUnit.path ){
