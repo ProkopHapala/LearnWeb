@@ -1,5 +1,9 @@
 var cubeRotation = 0.0;
 
+// noise generation:   http://paulbourke.net/fractals/noise/
+
+
+
 // ==== Vertex shader program
 const vsSource = `
 attribute vec4 aVertexPosition;
@@ -13,6 +17,7 @@ void main(void) {
 }
 `;
 
+/*
 // ==== Fragment shader program
 const fsSource = `
 varying highp vec2 vTextureCoord;
@@ -21,7 +26,112 @@ void main(void) {
   gl_FragColor = texture2D(uSampler, vTextureCoord);
 }
 `;
+*/
 
+/*
+// ==== Fragment shader program
+const fsSource = `
+precision lowp float;
+varying highp vec2 vTextureCoord;
+uniform sampler2D uSampler;
+void main(void) {
+    float h = texture2D(uSampler, vTextureCoord).r;
+    h = floor( h*10.0 )*0.1;
+    gl_FragColor = vec4( h, h, h, 1.0 );
+}
+`;
+*/
+
+// https://stackoverflow.com/questions/20052381/glsl-performance-function-return-value-type/21357620#21357620
+
+const fsSource = `
+precision lowp float;
+varying highp vec2 vTextureCoord;
+uniform sampler2D uSampler;
+
+vec4 textureBicubic(sampler2D sampler, vec2 texCoords, vec2 d  ){
+    vec4 p0 = texture2D(sampler, texCoords).rgba;
+    vec4 p1 = texture2D(sampler, texCoords+vec2( d.x, d.y));
+    vec4 p2 = texture2D(sampler, texCoords+vec2(-d.x, d.y));
+    vec4 p3 = texture2D(sampler, texCoords+vec2( d.x,-d.y));
+    vec4 p4 = texture2D(sampler, texCoords+vec2(-d.x,-d.y));
+    return (2.0*p0 + p1 + p2 + p3 + p4)/6.0;
+}
+
+void main(void) {
+    float d = 1.0/(8.0*16.0);
+    float h = textureBicubic(uSampler, vTextureCoord,  vec2( d, d ) ).r;
+    h = floor( h*16.0 )/16.0;
+    gl_FragColor = vec4( h, h, h, 1.0 );
+}
+`;
+
+
+// ==== Fragment shader program
+
+/*
+const fsSource = `
+// from here https://stackoverflow.com/questions/13501081/efficient-bicubic-filtering-code-in-glsl
+// from http://www.java-gaming.org/index.php?topic=35123.0
+
+precision lowp float;
+varying highp vec2 vTextureCoord;
+uniform sampler2D uSampler;
+
+vec4 cubic(float v){
+    vec4 n = vec4(1.0, 2.0, 3.0, 4.0) - v;
+    vec4 s = n * n * n;
+    float x = s.x;
+    float y = s.y - 4.0 * s.x;
+    float z = s.z - 4.0 * s.y + 6.0 * s.x;
+    float w = 6.0 - x - y - z;
+    return vec4(x, y, z, w) * (1.0/6.0);
+}
+
+vec4 textureBicubic(sampler2D sampler, vec2 texCoords){
+    //ivec2 texSize = textureSize(sampler, 0);
+    //
+    
+    vec2 texSize = vec2( 16, 16 );
+    vec2 invTexSize = 1.0 / texSize;
+
+    texCoords = texCoords * texSize - 0.5;
+
+    vec2 fxy = fract(texCoords);
+    texCoords -= fxy;
+
+    vec4 xcubic = cubic(fxy.x);
+    vec4 ycubic = cubic(fxy.y);
+
+    vec4 c = texCoords.xxyy + vec2 (-0.5, +1.5).xyxy;
+
+    vec4 s = vec4(xcubic.xz + xcubic.yw, ycubic.xz + ycubic.yw);
+    vec4 offset = c + vec4 (xcubic.yw, ycubic.yw) / s;
+
+    offset *= invTexSize.xxyy;
+
+    vec4 sample0 = texture2D(sampler, offset.xz);
+    vec4 sample1 = texture2D(sampler, offset.yz);
+    vec4 sample2 = texture2D(sampler, offset.xw);
+    vec4 sample3 = texture2D(sampler, offset.yw);
+
+    float sx = s.x / (s.x + s.y);
+    float sy = s.z / (s.z + s.w);
+
+    return mix(
+       mix(sample3, sample2, sx), mix(sample1, sample0, sx)
+    , sy);
+}
+
+void main(void) {
+    //float h = texture2D(uSampler, vTextureCoord).r;
+    
+    float h = textureBicubic( uSampler, vTextureCoord );
+    h = floor( h*10.0 )*0.1;
+    gl_FragColor = vec4( h, h, h, 1.0 );
+}
+`;
+*/
 
 const Obj1 = {
     verts : [
@@ -76,12 +186,13 @@ function main() {
   
   obj1     = new GLObject( gl ); obj1.fromVertNormUVind( Obj1.verts, null, Obj1.UVs, Obj1.inds );
   
-    let nx=256,ny=256;
+    //let nx=256,ny=256;
+    let nx=16,ny=16;
     let pixels = new  Uint8Array(nx*ny);
     for(let ix=0; ix<nx; ix++){
         for(let iy=0; iy<ny; iy++){
-           //pixels[ix+iy*nx]  = Math.random(255);
-           pixels[ix+iy*nx] = ix^iy;
+           pixels[ix+iy*nx]  = Math.random()*255;
+           //pixels[ix+iy*nx] = ix^iy;
         }
     }
   texture1 = textureFromUint8Array( gl, pixels, nx, ny );
@@ -128,7 +239,7 @@ function drawScene(gl, programInfo, deltaTime) {
 
     mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
     const modelViewMatrix = mat4.create();
-    mat4.translate(modelViewMatrix,  modelViewMatrix,                [-0.0, 0.0, -6.0]);
+    mat4.translate(modelViewMatrix,  modelViewMatrix,                [-0.0, 0.0, -4.0]);
     //mat4.rotate(modelViewMatrix, modelViewMatrix,  cubeRotation,     [0, 0, 1]);
     //mat4.rotate(modelViewMatrix, modelViewMatrix,  cubeRotation*0.7, [0, 1, 0]);
 
