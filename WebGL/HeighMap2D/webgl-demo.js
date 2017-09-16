@@ -75,7 +75,21 @@ function main() {
   //const buffers = initGLObj_indTex(gl, positions, textureCoordinates, indices );   console.log( "Here !!!!! " );
   
   obj1     = new GLObject( gl ); obj1.fromVertNormUVind( Obj1.verts, null, Obj1.UVs, Obj1.inds );
-  texture1 = loadTexture(  gl, 'cubetexture.png');
+  
+    let nx=256,ny=256;
+    let pixels = new  Uint8Array(nx*ny);
+    for(let ix=0; ix<nx; ix++){
+        for(let iy=0; iy<ny; iy++){
+           //pixels[ix+iy*nx]  = Math.random(255);
+           pixels[ix+iy*nx] = ix^iy;
+        }
+    }
+  texture1 = textureFromUint8Array( gl, pixels, nx, ny );
+  //texture1 = loadTexture(  gl, 'cubetexture.png');
+
+
+
+
 
   var then = 0;
 
