@@ -153,27 +153,26 @@ const Obj1 = {
 
 var obj1     = null;
 var texture1 = null;
+var projectionMatrix = mat4.create();
+var modelViewMatrix  = mat4.create(); mat4.translate  ( modelViewMatrix,  modelViewMatrix, [ 0.0, 0.0, -4.0] );
 
 main();
 
 // ========== main
 
 function main() {
-  const canvas = document.querySelector('#glcanvas');
-  const gl = canvas.getContext('webgl');
 
-  // If we don't have a GL context, give up now
-  if (!gl) {
-    alert('Unable to initialize WebGL. Your browser or machine may not support it.');
-    return;
-  }
+  const canvas = document.querySelector('#glcanvas');
+  const gl     = canvas.getContext('webgl2');
+  if (!gl) { alert('Unable to initialize WebGL. Your browser or machine may not support it.'); return; }
+  //gl.getExtension('OES_texture_float_linear');
 
   const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
   const programInfo = {
     program: shaderProgram,
     attribLocations: {
-      vert: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-      UV  :   gl.getAttribLocation(shaderProgram, 'aTextureCoord'  ),
+      vert: gl.getAttribLocation(shaderProgram,   'aVertexPosition' ),
+      UV  :   gl.getAttribLocation(shaderProgram, 'aTextureCoord'   ),
     },
     uniformLocations: {
       projectionMatrix : gl.getUniformLocation(shaderProgram, 'uProjectionMatrix' ),
@@ -188,19 +187,18 @@ function main() {
   
     //let nx=256,ny=256;
     let nx=16,ny=16;
-    let pixels = new  Uint8Array(nx*ny);
+    let pixels  = new  Uint8Array(nx*ny);
+    let heights = new  Float32Array(nx*ny);
     for(let ix=0; ix<nx; ix++){
         for(let iy=0; iy<ny; iy++){
-           pixels[ix+iy*nx]  = Math.random()*255;
+           //pixels[ix+iy*nx]  = Math.random()*255;
            //pixels[ix+iy*nx] = ix^iy;
+           heights[ix+iy*nx]  = Math.random();
         }
     }
-  texture1 = textureFromUint8Array( gl, pixels, nx, ny );
+  //texture1 = textureFromUint8Array( gl, pixels, nx, ny );
+  texture1 = textureFromFloat32Array( gl, heights, nx, ny );
   //texture1 = loadTexture(  gl, 'cubetexture.png');
-
-
-
-
 
   var then = 0;
 
@@ -226,20 +224,13 @@ function drawScene(gl, programInfo, deltaTime) {
     gl.clearDepth(1.0);                 // Clear everything
     gl.enable(gl.DEPTH_TEST);           // Enable depth testing
     gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
-
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
+    
     gl.useProgram(programInfo.program);
 
-    const fieldOfView = 45 * Math.PI / 180;   // in radians
     const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-    const zNear  = 0.1;
-    const zFar   = 100.0;
-    const projectionMatrix = mat4.create();
 
-    mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
-    const modelViewMatrix = mat4.create();
-    mat4.translate(modelViewMatrix,  modelViewMatrix,                [-0.0, 0.0, -4.0]);
+    mat4.perspective( projectionMatrix, 45*Math.PI/180, aspect, 0.1, 100.0  );
     //mat4.rotate(modelViewMatrix, modelViewMatrix,  cubeRotation,     [0, 0, 1]);
     //mat4.rotate(modelViewMatrix, modelViewMatrix,  cubeRotation*0.7, [0, 1, 0]);
 

@@ -86,7 +86,7 @@ vec3.lincomb = function( out, a, b, c, fa, fb, fc ){
 }
 
 vec3.rotate_csa_raw = function( out, ioff, x,y,z, ux,uy,uz, ca, sa ){
-    console.log( "rotate_csa_raw: ", ioff, x,y,z,  ux,uy,uz, ca, sa );
+    //console.log( "rotate_csa_raw: ", ioff, x,y,z,  ux,uy,uz, ca, sa );
 	let cu = (1-ca)*( ux*x + uy*y + uz*z );
     let utx = uy*z - uz*y;
 	let uty = uz*x - ux*z;

@@ -1,5 +1,13 @@
 "use strict";
 
+
+function printWithLineNumbers( str ){
+    let lines = str.split('\n');
+    for( let i=0; i<lines.length; i++ ){
+        console.log( i, lines[i] );
+    }
+}
+
 // ====  initShaderProgram
 
 function initShaderProgram(gl, vsSource, fsSource) {
@@ -25,7 +33,8 @@ function loadShader(gl, type, source) {
   gl.shaderSource(shader, source);
   gl.compileShader(shader);
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    console.log( source );
+    //console.log( source );
+    printWithLineNumbers(  source );
     alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
     gl.deleteShader(shader);
     return null;
@@ -80,8 +89,62 @@ function textureFromUint8Array( gl, arr, w, h ){
     //gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, width, height, border, srcFormat, srcType, pixel);
     const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, w, h, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, arr);
+    gl.texImage2D ( gl.TEXTURE_2D, 0, gl.LUMINANCE, w, h, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, arr);
     genMinimap( gl, w, h );
+    return texture;
+}
+
+    function textureFromFloat32Array( gl, arr, w, h ){
+        console.log( "in textureFromFloat32Array: ");
+        // https://developer.mozilla.org/en-US/docs/Web/API/OES_texture_float
+        gl.getExtension('OES_texture_float');         // just in case
+        gl.getExtension('OES_texture_float_linear');  // do I need this with WebGL2 ?
+        // see https://www.khronos.org/registry/webgl/specs/latest/2.0/#TEXTURE_TYPES_FORMATS_FROM_DOM_ELEMENTS_TABLE
+        const texture = gl.createTexture();
+        gl.bindTexture( gl.TEXTURE_2D, texture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.R32F, w, h, 0, gl.RED, gl.FLOAT, arr);
+        //gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, w, h, 0, gl.LUMINANCE, gl.FLOAT, arr);
+        //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        return texture;
+    }
+
+
+function texture3DFromFloat32Array( gl, arr, nx, ny, nz ){
+    //var data = new Float32Array(SIZE * SIZE * SIZE);
+    gl.getExtension('OES_texture_float');         // just in case
+    gl.getExtension('OES_texture_float_linear');  // do I need this with WebGL2 ?
+    var texture = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_3D, texture);
+    //gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    //gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_BASE_LEVEL, 0);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAX_LEVEL,  0);
+    //gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    //gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texImage3D(
+        gl.TEXTURE_3D,  // target
+        0,              // level
+        gl.R32F,        // internalformat
+        nx,           // width
+        ny,           // height
+        nz,              // depth
+        0,              // border
+        gl.RED,         // format
+        gl.FLOAT,       // type
+        arr            // pixel
+    );
     return texture;
 }
 
