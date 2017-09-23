@@ -67,11 +67,19 @@ HexRuler.prototype.drawHexSamples = function( ctx, nx, ny, d, dpx ){
     }
 }
 
-HexRuler.prototype.drawHexagon = function( ia, ib ){
-    let yc = this.y0 + this.step * (ia * 0.86602540378);
-    let xc = this.x0 + this.step * (ib + 0.5*ia);
-    ctx.fillRect( xc-5, yc-5, 10, 10 );
-    console.log( xc, yc );
+HexRuler.prototype.drawHexagon = function( screen, ia, ib ){
+    //let yc = this.y0 + this.step * (ia * 0.86602540378);
+    //let xc = this.x0 + this.step * (ib + 0.5*ia);
+
+    let yc = this.y0 + this.step *         (ib*0.86602540378);
+    let xc = this.x0 + this.step *(ia + 0.5*ib);
+
+    //screen.ctx.fillRect( xc-5, yc-5, 10, 10 );
+    console.log( "iab: ", ia, ib,  " xyc: ", xc, yc );
+    //screen.ngon( xc, yc, 1.5,0.0, 6, false );
+    //screen.ngon(  yc, xc, this.step*0.5,0.0, 6, false );
+    screen.ngon( xc, yc, 0.0, this.step*0.57735026919, 6, false );
+    /*
     ctx.beginPath();
     let dx = this.step*0.5;
     let dy = this.step*0.86602540378;
@@ -83,6 +91,7 @@ HexRuler.prototype.drawHexagon = function( ia, ib ){
     ctx.lineTo( xc+dx   , yc-dy );
     ctx.lineTo( xc+dx+dx, yc    );
     ctx.stroke();
+    */
 }
 
 

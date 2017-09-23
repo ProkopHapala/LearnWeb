@@ -14,14 +14,20 @@ window.requestAnimFrame =
 
 // ============ Globals
 
+var ntiles = 16;
+var tiles = Array( ntiles*ntiles );
+let results_tmp = Array(9);
+
+var houses = [];
+
 const minDrawLength = 10.0;
-
-
 
 var army1 = new Army( "Army1" ); army1.color="#f00";
 var army2 = new Army( "Army2" ); army2.color="#00f";
 
-var hexRuler1 = new HexRuler( 5.0, 0, 0 );
+//var hexRuler1 = new HexRuler( 5.0, 0, 0 );
+
+var ruler1 = new SquareRuler( 10.0, -20, -20, ntiles );
 
 var Globals = {
     thisArmy: army1,
@@ -104,6 +110,7 @@ function drawScene(){
     let mouse = screen.mouse;
     //screen.rect( mouse.x, mouse.y, 0.5, 0.5, true );
 
+    /*
     hexRuler1.hexIndex( mouse.x, mouse.y );
     //console.log( "mouse x,y: ", mouse.x, mouse.y, " ruler ia,ib: ",  hexRuler1.ia, hexRuler1.ib );
     hexRuler1.drawHexagon( screen, hexRuler1.ia, hexRuler1.ib );
@@ -112,8 +119,57 @@ function drawScene(){
         hexRuler1.drawHexagon( screen, 5,  5+i );
         //hexRuler1.drawHexagon( screen, 5+i,  5 );
     }
+    */
+
+    //ruler1.index( mouse.x, mouse.y );
+    //console.log( "mouse x,y: ", mouse.x, mouse.y, " ruler ia,ib: ",  ruler1.ia, ruler1.ib );
+    //ruler1.drawTile( screen, ruler1.ia, ruler1.ib );
+    //for( let i=0; i<5; i++ ){ ruler1.drawTile( screen, 5+i,5   ); ruler1.drawTile( screen, 5,  5+i ); }
+
+
+    let r = 3.0;
+    ctx.beginPath();
+    ctx.strokeStyle = '#000';
+    screen.circle( mouse.x, mouse.y, r, false );
+
+    let nres = ruler1.getOverlapingTiles( mouse.x, mouse.y, r, results_tmp );
+    //console.log( nres, results_tmp );
+    ctx.beginPath();
+    ctx.strokeStyle = '#888';
+    for( let j=0; j<nres; j++ ){
+        let itile = results_tmp[j];
+        ruler1.i2ip(itile);
+        //console.log( itile, ruler1.ia, ruler1.ib  );
+        ruler1.drawTile( screen, ruler1.ia, ruler1.ib );
+        //tiles[itile].push( i );
+    }
+
+    ruler1.index( mouse.x, mouse.y );
+    ctx.beginPath();
+    ctx.strokeStyle = '#f00';
+    ruler1.drawTile( screen, ruler1.ia, ruler1.ib );
+    let itile = ruler1.ip2i( ruler1.ia, ruler1.ib );
+    let tile = tiles[itile];
+    //console.log( itile, tile.length );
+    for( let i=0; i<tile.length; i++ ){
+        let iobj = tile[i];
+        let obj  = houses[iobj]; 
+        obj.draw(screen, true);
+    }
 
     //screen.ngon( mouse.x, mouse.y, 1.5,0.0, 6, false );
+    ctx.beginPath();
+    ctx.strokeStyle = '#00f';
+    for(let i=0; i<houses.length; i++ ){
+        let obj = houses[i];
+        obj.draw(screen);
+        /*
+        if( obj.pointDist( mouse.x,mouse.y ) < 0.0 ){
+            console.log( " picked  ", i );
+            obj.draw(screen, true);
+        }
+        */
+    }
 
 }
 
@@ -132,7 +188,31 @@ window.onload = function () {
     canvas.height = 512;
 
     screen = new Screen2D( canvas, ctx, 5.0 );
-    
+
+    for(let i=0; i<tiles.length; i++){
+        tiles[i] = [];
+    }
+
+    let nhouses = 10;
+    for(let i=0; i<nhouses; i++ ){
+        let obj = new RectObject();
+        obj.lpos[0] = Math.random()*100.0; 
+        obj.lpos[1] = Math.random()*50.0;
+        let a = Math.random()*2*Math.PI;
+        obj.lrot[0] = Math.cos(a);
+        obj.lrot[1] = Math.sin(a);
+        obj.span[0] = 1.0;
+        obj.span[1] = 0.5;
+        houses.push( obj );
+
+        let nres = ruler1.getOverlapingTiles( obj.lpos[0], obj.lpos[1], 3.0, results_tmp );
+        console.log( nres, results_tmp );
+        for( let j=0; j<nres; j++ ){
+            let itile = results_tmp[j];
+            tiles[itile].push( i );
+        }
+    }
+
     canvas.onmousedown = function (e) {
         let mouse = screen.mouse;
         mouse.button  = e.which;
