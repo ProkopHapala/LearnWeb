@@ -1,18 +1,19 @@
 "use strict";
 
-var Foil2D = function(){
-    SubBody2D.call();
-	this.area   = 1.0;  // [m^2]
-	this.CD0    = 0.02;
-	this.dCD    = 0.9;
-	this.dCDS   = 0.9;
-	this.dCL    = 6.28;
-	this.dCLS   = 2.82743338823;
-	this.sStall = 0.16;
-	this.wStall = 0.08;
-}
+class Foil2D extends Body2D {
+	constructor(){
+		super();
+		this.area   = 1.0;  // [m^2]
+		this.CD0    = 0.02;
+		this.dCD    = 0.9;
+		this.dCDS   = 0.9;
+		this.dCL    = 6.28;
+		this.dCLS   = 2.82743338823;
+		this.sStall = 0.16;
+		this.wStall = 0.08;
+	}
 
-Foil2D.prototype.polarModel = function( ca, sa, LD ){
+polarModel( ca, sa, LD ){
 	let abs_sa = (sa>0)?sa:-sa;
 	let wS     = trashold_cub( abs_sa, this.sStall, this.sStall+this.wStall );
 	let mS     = 1 - wS;
@@ -21,15 +22,15 @@ Foil2D.prototype.polarModel = function( ca, sa, LD ){
 	LD[1]      = ( mS*this.dCL        + wS*this.dCLS*ca ) * sa;
 }
 
-Foil2D.prototype.applyAeroForce( platform, vel, density ){
+applyAeroForce( platform, vel, density ){
 	let gpos  = [0.0,0.0]; 
 	let grot  = [0.0,0.0];
 	let vhat  = [0.0,0.0];
 	let force = [0.0,0.0];
 	let LD    = [0.0,0.0];
 	
-	vec2.mul_complex( grot, platform.rot, lrot );
-	vec2.mul_complex( gpos, platform.rot, lpos );
+	vec2.mul_complex( grot, platform.rot, this.rot );
+	vec2.mul_complex( gpos, platform.rot, this.pos );
 	
 	vhat[0] = vel[0] + gpos[1] * platform.omega;
 	vhat[1] = vel[1] - gpos[0] * platform.omega;
@@ -49,14 +50,55 @@ Foil2D.prototype.applyAeroForce( platform, vel, density ){
 	
 	platform.apply_force( force, gpos );
 	
-};
+}
 
-double AeroSurf2D::fromString( char * s ){
-	double angle;
+fromString( s ){
+	//double angle;
 	//printf( "%s \n", s );
-	sscanf ( s, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &pos.x, &pos.y, &angle, &area, &CD0, &dCD, &dCDS, &dCL, &dCLS, &sStall, &wStall );
-	setAngle( angle );
-	printf( "%s \n", toString( ) );
-};
+	//sscanf ( s, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &pos.x, &pos.y, &angle, &area, &CD0, &dCD, &dCDS, &dCL, &dCLS, &sStall, &wStall );
+	//setAngle( angle );
+	//printf( "%s \n", toString( ) );
+	wds= s.split();
+	this.pos  [0] =float(wds[0]);
+	this.pos.y[1] =float(wds[1]);
+	this.setAngle( float(wds[2]) );
+	this.area     =float(wds[3]);
+	this.CD0      =float(wds[4]);
+	this.dCD      =float(wds[5]);
+	this.dCDS     =float(wds[6]);
+	this.dCL      =float(wds[7]);
+	this.dCLS     =float(wds[8]);
+	this.sStall   =float(wds[9]);
+	this.wStall   =float(wds[10]);
+}
 
-res = str.split();
+samplePolar( n, amin, amax ){
+	let da = (amax-amin)/(n-1);
+	let alphas = Array(n);
+	let CLs    = Array(n);
+	let CDs    = Array(n);
+	let LD = vec2.create();
+	for( let i=0; i<n; i++ ){
+		let alpha = amin + i*da;
+		this.polarModel( Math.cos(alpha), Math.sin(alpha), LD );
+		alphas[i] = alpha;
+		CLs[i]    = LD[1];
+		CDs[i]    = LD[0]; 
+	}
+	return { alphas:alphas, CDs:CDs, CLs:CLs }; 
+}
+
+draw(screen, platform){
+	let gpos  = [0.0,0.0]; 
+	let grot  = [0.0,0.0];
+	vec2.mul_complex( grot, platform.rot, this.rot );
+	vec2.mul_complex( gpos, platform.rot, this.pos );
+	vec2.add( gpos, gpos, platform.pos ); 
+	let sz = -2.0;
+	//console.log( this.rot, this.pos,  gpos, grot );
+	screen.line( gpos[0], gpos[1], gpos[0]+grot[0]*sz, gpos[1]+grot[1]*sz );
+}
+
+}
+
+//res = str.split();

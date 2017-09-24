@@ -53,9 +53,9 @@ class Screen2D{
         if( filled ){ ctx.fill(); }else{ ctx.stroke(); };
     }
 
-    circle( x0,y0, r, filled ){
-
+    circle( x0, y0, r, filled ){
         //this.ctx.arc( this.x2pix(x0), this.y2pix(y0), r/this.zoom, 0, 2 * Math.PI, false);
+        this.ctx.beginPath();
         this.ctx.arc( this.x2pix(x0), this.y2pix(y0), r*this.Zoom, 0, 2 * Math.PI, false);
         if( filled ){ ctx.fill(); }else{ ctx.stroke(); };
     }
@@ -66,6 +66,31 @@ class Screen2D{
         let py   = e.clientY - rect.top;
         this.mouse.x  = this.pix2x( px );
         this.mouse.y  = this.pix2x( py );
+    }
+
+    plot( xs, ys, xscale, yscale ){
+        let ctx = this.ctx;
+        let x0=0,sx=1.0, y0=0,sy=1.0;      
+        if( xscale ){ x0=xscale[0]; sx=xscale[1]; }
+        if( yscale ){ y0=yscale[0]; sy=yscale[1]; } 
+        ctx.beginPath();
+        for(let i=0; i<xs.length; i++){
+            let x = this.x2pix( x0+xs[i]*sx  );
+            let y = this.y2pix( y0+ys[i]*sy );
+            //console.log( i,x,y );
+            if( i==0 ){ ctx.moveTo( x, y ); }else{  ctx.lineTo( x, y ); }
+        }
+        ctx.stroke();
+    }
+
+    drawAxis( xscale, yscale ){
+        let ctx = this.ctx;    
+        let x0=this.x2pix( xscale[0] ); //sx=xscale[1];
+        let y0=this.x2pix( yscale[0] ); //sy=yscale[1];
+        ctx.beginPath();
+        ctx.moveTo( x0, 0.0 ); ctx.lineTo ( x0, this.canvas.height ); 
+        ctx.moveTo( 0.0, y0 );  ctx.lineTo( this.canvas.width, y0 ); 
+        ctx.stroke();
     }
 
 };

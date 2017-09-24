@@ -196,16 +196,16 @@ window.onload = function () {
     let nhouses = 10;
     for(let i=0; i<nhouses; i++ ){
         let obj = new RectObject();
-        obj.lpos[0] = Math.random()*100.0; 
-        obj.lpos[1] = Math.random()*50.0;
+        obj.pos[0] = Math.random()*100.0; 
+        obj.pos[1] = Math.random()*50.0;
         let a = Math.random()*2*Math.PI;
-        obj.lrot[0] = Math.cos(a);
-        obj.lrot[1] = Math.sin(a);
+        obj.rot[0] = Math.cos(a);
+        obj.rot[1] = Math.sin(a);
         obj.span[0] = 1.0;
         obj.span[1] = 0.5;
         houses.push( obj );
 
-        let nres = ruler1.getOverlapingTiles( obj.lpos[0], obj.lpos[1], 3.0, results_tmp );
+        let nres = ruler1.getOverlapingTiles( obj.pos[0], obj.pos[1], 3.0, results_tmp );
         console.log( nres, results_tmp );
         for( let j=0; j<nres; j++ ){
             let itile = results_tmp[j];
