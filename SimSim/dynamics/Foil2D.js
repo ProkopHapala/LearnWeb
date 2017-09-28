@@ -1,5 +1,14 @@
 "use strict";
 
+var Foil2D_temps = {
+	gpos  : vec2.create(),
+	grot  : vec2.create(),
+	vhat  : vec2.create(),
+	force : vec2.create(),
+	LD    : vec2.create(),
+	screen: null
+};
+
 class Foil2D extends Body2D {
 	constructor(){
 		super();
@@ -9,8 +18,10 @@ class Foil2D extends Body2D {
 		this.dCDS   = 0.9;
 		this.dCL    = 6.28;
 		this.dCLS   = 2.82743338823;
-		this.sStall = 0.16;
-		this.wStall = 0.08;
+		//this.sStall = 0.16;
+		//this.wStall = 0.08;
+		this.sStall = 0.06;
+		this.wStall = 0.2;
 	}
 
 polarModel( ca, sa, LD ){
@@ -23,31 +34,60 @@ polarModel( ca, sa, LD ){
 }
 
 applyAeroForce( platform, vel, density ){
-	let gpos  = [0.0,0.0]; 
-	let grot  = [0.0,0.0];
-	let vhat  = [0.0,0.0];
-	let force = [0.0,0.0];
-	let LD    = [0.0,0.0];
+	//let gpos  = [0.0,0.0]; 
+	//let grot  = [0.0,0.0];
+	//let vhat  = [0.0,0.0];
+	//let force = [0.0,0.0];
+	//let LD    = [0.0,0.0];
+	let gpos  = Foil2D_temps.gpos; 
+	let grot  = Foil2D_temps.grot;
+	let vhat  = Foil2D_temps.vhat;
+	let force = Foil2D_temps.force;
+	let LD    = Foil2D_temps.LD;
 	
 	vec2.mul_complex( grot, platform.rot, this.rot );
 	vec2.mul_complex( gpos, platform.rot, this.pos );
-	
+
+	//console.log( gpos, grot );
+	//vhat[0] = vel[0]; vhat[1] = vel[1];
+
 	vhat[0] = vel[0] + gpos[1] * platform.omega;
 	vhat[1] = vel[1] - gpos[0] * platform.omega;
 	
+	//console.log( vhat );
+
 	let vr2 = vec2.sqrLen( vhat );
-	let ivr = 1/sqrt( vr2 + SAFETY_v );
-	vec2.mul( vhat, vhat, ivr );
+	let ivr = 1/Math.sqrt( vr2 + 1e-8 );
+	vec2.scale( vhat, vhat, ivr );
 	
-	let sa = vec2.dot   ( vhat, grot );
-	let ca = vec2.fcross( vhat, grot );
+	let ca = vec2.dot   ( vhat, grot );
+	let sa = vec2.fcross( vhat, grot );
 	
-	this.polarModel( ca, sa, LD );
+	this.polarModel( ca, sa, LD );//   [Drag, Lift]
+
+	//console.log( ca, sa, LD );
 	
-	let prefactor = vr2 * density * area;
-	force[0] = prefactor*( LD[0]*vhat[0] - LD[1]*vhat[1] );
-	force[0] = prefactor*( LD[0]*vhat[1] + LD[1]*vhat[0] );
-	
+	let prefactor = vr2 * density * this.area;
+	//force[0] = prefactor*( LD[0]*vhat[0] - LD[1]*vhat[1] );
+	//force[1] = prefactor*( LD[0]*vhat[1] + LD[1]*vhat[0] );
+
+	force[0] = prefactor*( LD[0]*vhat[0] + LD[1]*vhat[1] );
+	force[1] = prefactor*( LD[0]*vhat[1] - LD[1]*vhat[0] );
+
+	//console.log( force, gpos );
+	if( Foil2D_temps.screen ) {  
+		//console.log( Foil2D_temps.screen );  
+		let x0 = platform.pos[0]+gpos[0];
+		let y0 = platform.pos[1]+gpos[1];
+		//screen.ctx.strokeStyle = '#f00'; screen.vecInPos( prefactor*LD[0]*vhat[0]*10.0,  prefactor*LD[0]*vhat[1]*10.0, x0, y0 ); 
+		//screen.ctx.strokeStyle = '#00f'; screen.vecInPos( prefactor*LD[1]*vhat[1]*10.0, -prefactor*LD[1]*vhat[0]*10.0, x0, y0 ); 
+		//screen.ctx.strokeStyle = '#f0f'; screen.vecInPos( force[0]*10.0, force[1]*10.0, x0, y0 ); 
+		screen.ctx.strokeStyle = '#f00'; screen.vecInPos( LD[0]*vhat[0]*10.0,  LD[0]*vhat[1]*10.0, x0, y0 ); 
+		screen.ctx.strokeStyle = '#00f'; screen.vecInPos( LD[1]*vhat[1]*10.0, -LD[1]*vhat[0]*10.0, x0, y0 ); 
+		screen.ctx.strokeStyle = '#f0f'; screen.vecInPos( force[0]*10.0/prefactor, force[1]*10.0/prefactor, x0, y0 ); 
+		//screen.ctx.strokeStyle = '#0f0'; screen.vecInPos( vhat[0]*10.0,   vhat[1]*10.0,  x0, y0 );
+		screen.ctx.strokeStyle = '#000'; screen.line( platform.pos[0], platform.pos[1], x0, y0 );
+	};
 	platform.apply_force( force, gpos );
 	
 }
@@ -89,8 +129,10 @@ samplePolar( n, amin, amax ){
 }
 
 draw(screen, platform){
-	let gpos  = [0.0,0.0]; 
-	let grot  = [0.0,0.0];
+	//let gpos  = [0.0,0.0]; 
+	//let grot  = [0.0,0.0];
+	let gpos  = Foil2D_temps.gpos; 
+	let grot  = Foil2D_temps.grot;
 	vec2.mul_complex( grot, platform.rot, this.rot );
 	vec2.mul_complex( gpos, platform.rot, this.pos );
 	vec2.add( gpos, gpos, platform.pos ); 

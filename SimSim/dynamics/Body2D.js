@@ -1,5 +1,9 @@
 "use strict";
 
+var DynamicBody2D_temps = {
+	gdpos   : vec2.create()
+};
+
 class Body2D{
     constructor(){
         this.radius = 1.0;
@@ -66,13 +70,21 @@ class DynamicBody2D extends Body2D{
         this.torq   = 0.0;
     }
 
+    cleanForces(){ this.force[0]=0.0; this.force[1]=0.0; this.torq=0.0; }
+
     move(dt){
+        //console.log( this.force );
+        
         let invMass = 1.0/this.mass;
         vec2.scaleAndAdd( this.vel,this.vel, this.force, dt*invMass );
         vec2.scaleAndAdd( this.pos,this.pos, this.vel,   dt         );
+
         let invI = 1.0/this.I;
         this.omega += this.torq * invI * dt;
-        vec2.drot( this.rot, this.rot, omega*dt );
+
+        //console.log( this.torq, invI, dt, "|", this.omega );
+
+        vec2.drot( this.rot, this.rot, this.omega*dt );
         // check if rot is unitary
         let r2 =  vec2.sqrLen(this.rot);
         if( (r2>1.0001) || (r2<0.9999) ){ vec2.scale( this.dir, this.dir, 1/Math.sqrt(r2) );  }
@@ -80,16 +92,20 @@ class DynamicBody2D extends Body2D{
     
     apply_force( dforce, gdpos ){
         this.torq += vec2.fcross( gdpos, dforce );
+        //console.log( gdpos, dforce, vec2.fcross( gdpos, dforce ) );
         vec2.add( this.force, this.force, dforce );
+        //console.log( dforce, gdpos, " | ", this.torq, this.force );
     }
     
     transformSub_d( loc, glob ){ vec2.mul_complex( glob, loc, this.rot );  };
     transformSub_p( loc, glob ){ vec2.mul_complex( glob, loc, this.rot ); vec2.add(glob,blob,this.pos); };
     applySubForce( sub, dforce ){
-        let  gdpos = [];
+        //let  gdpos = [];
+        let gdpos = DynamicBody2D_temps.gdpos;
         vec2.mul_complex( gpos, sub.pos, this.rot );
         this.torq += vec2.fcross( gdpos, dforce );
         vec2.add( this.force, this.force, dforce );
+        //console.log(  dforce, this.torq );
     }
 
 }

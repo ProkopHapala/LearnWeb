@@ -1,5 +1,17 @@
 "use strict";
 
+var Ship_temps = {
+	vwater   : vec2.create()
+};
+
+
+class Environment2D{
+    constructor( ){
+        this.water_speed = vec2.create();
+        this.wind_speed  = vec2.create();
+    }
+}
+
 // ===========================
 //          ShipType
 // ===========================
@@ -31,6 +43,23 @@ class Ship extends DynamicBody2D{
         this.turrets = [];
     }
 
+    evalForces( environment ){
+        this.cleanForces();
+        vec2.scaleAndAdd( this.force, this.force, this.rot, 2.0 ); // motor
+        let v = Ship_temps.vwater;
+        vec2.sub( v, environment.water_speed, this.vel );
+        for( let i=0; i<this.foils.length; i++ ){
+            //this.foils[i].applyAeroForce( this, this.vel, 1.0 );
+            this.foils[i].applyAeroForce( this, v, 1.0 );
+        }
+    }
+
+    update( dt, environment ){
+        this.evalForces( environment );
+        //console.log( this.force );
+        this.move(dt);
+    }
+
     draw(screen){
         let ctx=screen.ctx;
         var x,y;
@@ -54,12 +83,4 @@ class Ship extends DynamicBody2D{
     }
 
 }
-
-
-
-
-
-
-
-
 

@@ -25,6 +25,9 @@ function quadratic_roots( a, b, c,  roots ){
 //   2D
 // ========================
 
+vec2.fromAngleLength=function( out, phi, L ){ out[0] = Math.cos(phi)*L; out[1] = Math.sin(phi)*L; }
+
+
 vec2.mul_complex=function( out, a, b ){
     let ax=a[0]; let ay=a[1];   let bx=b[0]; let by=b[1];
     out[0] = ax*bx - ay*by;     out[1] = ax*by + ay*bx;

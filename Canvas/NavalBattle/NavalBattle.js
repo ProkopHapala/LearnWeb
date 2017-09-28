@@ -20,8 +20,16 @@ var Globals = {
     //thisArmy: army1,
     thisUnit: null,
     tank1:    null,
-    dt:       0.2,
+    polar:    null,
+    angle:    0.0,
+    testFoilPlatform: null,
+    waterAngLen : [ Math.PI*-0.5, 1.0 ],
+    dt:       0.01,
 }
+
+var environment = new Environment2D();
+
+var units = [];
 
 var canvas,ctx;
 var screen;
@@ -30,43 +38,59 @@ var screen;
 
 // ============ Functions
 
+function makeFoilPlatform(){
+        
+    let body       = new DynamicBody2D( );
+    let foil     = new Foil2D();
+    foil.pos[0]  = 5.0;
+
+    Globals.polar = foil.samplePolar( 100, Math.PI, -Math.PI );
+
+    //body.foils.push( foil );
+    body.foil = foil;
+    body.pos[0]=100; body.pos[1]=30;
+    return body;
+};
+
 function makeShip(){
 
     let gunType1   = new GunType( "75mm", new AmmoType() );
     let turretType = new TurretType( 1, gunType1, 1.0 ); 
-    let turret1  = new Turret( turretType ); turret1.pos[0] = 2.0; turret1.setAngle( Math.PI * 0.6 );
-    let turret2  = new Turret( turretType ); turret2.pos[0] = 5.0; turret2.setAngle( Math.PI * 0.6 );
+    let turret1    = new Turret( turretType ); turret1.pos[0] = 2.0; turret1.setAngle( Math.PI * 0.6 );
+    let turret2    = new Turret( turretType ); turret2.pos[0] = 5.0; turret2.setAngle( Math.PI * 0.6 );
     
-    let shipType = new ShipType();
+    let shipType   = new ShipType();
 
-    let ship     = new Ship( "ship1", shipType );
+    let ship       = new Ship( "ship1", shipType );
     ship.turrets.push( turret1 );
     ship.turrets.push( turret2 );
 
-    let keel      = new Foil2D();
-    let rudder    = new Foil2D();
-    rudder.pos[0] = -shipType.length*0.5 + shipType.lcog;
+    let keel       = new Foil2D(); keel  .area = 10.0;
+    let rudder     = new Foil2D(); rudder.area = 0.1;   rudder.setAngle( -0.15 );
+    rudder.pos[0]  = -shipType.length*0.5 + shipType.lcog;
+
+    //Globals.polar = rudder.samplePolar( 100, Math.PI, -Math.PI );
+
+    ship.I = 10.0;
 
     ship.foils.push( keel   );
     ship.foils.push( rudder );
     //shipType.sails.push( sail1 );
 
-    ship.pos[0]=30; ship.pos[1]=30;
+    ship.pos[0]=100; ship.pos[1]=30;
     return ship;
 };
-
 
 function makeTank(){
     
     let gunType1   = new GunType( "75mm", new AmmoType() );
     let turretType = new TurretType( 1, gunType1, 1.5 ); 
-    let tankType = new TankType( turretType );
+    let tankType   = new TankType( turretType );
 
-    let tank     = new Tank( tankType );
-    tank.pos[0]=50; tank.pos[1]=50;
+    let tank       = new Tank( tankType );
+    tank.pos[0]=150; tank.pos[1]=50;
     return tank;
 };
-
 
 function updateScene(){
     //console.log( "units.length " + units.length );
@@ -75,22 +99,59 @@ function updateScene(){
 
     //army1.update(dt, army2);
 
-    drawScene( );
+    //vec2.fromAngleLength( environment.water_speed,  Globals.waterAngLen[0], Globals.waterAngLen[1] ); 
+
+    //vec2.fromAngleLength( environment.water_speed,  Globals.waterAngLen[0], 0.0 ); 
+    vec2.set( environment.water_speed,0.0,0.0 );
+    for( let i=0; i<units.length; i++ ){
+        units[i].update( dt, environment );
+    }
+
+    //Globals.thisUnit.setAngle  ( Globals.angle );
+    //Globals.thisUnit.evalForces( environment   );    
+    //Globals.thisUnit.move( dt   );    
+
+    drawScene();
     requestAnimFrame(updateScene);
+}
+
+function drawTestFoilPolar(){
+    Foil2D_temps.screen = screen;
+    //vec2.fromAngleLength( environment.water_speed,  Globals.waterAngLen[0], Globals.waterAngLen[1] ); 
+    Globals.testFoilPlatform.setAngle  ( Globals.angle );
+    //Globals.testFoilPlatform.evalForces( environment );
+    Globals.testFoilPlatform.foil.applyAeroForce( Globals.testFoilPlatform, [1.0,0.0], 1.0 );
+    Foil2D_temps.screen = null;
+
+    if( Globals.polar ){
+        let xscale = [50.0,10.0]; 
+        let yscale = [50.0,10.0]; 
+        screen.ctx.strokeStyle = "#f00"; screen.plot( Globals.polar.alphas, Globals.polar.CDs, xscale, yscale );
+        screen.ctx.strokeStyle = "#00f"; screen.plot( Globals.polar.alphas, Globals.polar.CLs, xscale, yscale );
+        screen.ctx.strokeStyle = "#888"; screen.drawAxis( xscale, yscale ); screen.axhline( Globals.angle-Globals.waterAngLen[0], xscale );
+
+        xscale[1] *= 4.0; 
+        yscale[0] += 30.0; 
+        screen.ctx.strokeStyle = "#f0f"; screen.plot( Globals.polar.CDs,    Globals.polar.CLs, xscale, yscale );
+        screen.ctx.strokeStyle = "#888"; screen.drawAxis( xscale, yscale );
+    }
 }
 
 function drawScene(){
 
+    screen.ctx.strokeStyle = "#000";
+
     let ship = Globals.thisUnit;
-    vec2.drot( ship.rot, ship.rot, 0.01 );
-    vec2.drot( ship.turrets[0].rot, ship.turrets[0].rot, 0.01 );
+    //vec2.drot( ship.rot, ship.rot, 0.01 );
+    //vec2.drot( ship.turrets[0].rot, ship.turrets[0].rot, 0.01 );
     ship.draw(screen);
 
-
     let tank = Globals.tank1;
-    vec2.drot( tank.rot, tank.rot, 0.01 );
-    vec2.drot( tank.turret.rot, tank.turret.rot, 0.01 );
+    //vec2.drot( tank.rot, tank.rot, 0.01 );
+    //vec2.drot( tank.turret.rot, tank.turret.rot, 0.01 );
     tank.draw(screen);
+
+    drawTestFoilPolar();
 
 }
 
@@ -100,6 +161,22 @@ function initScene() {
     updateScene();
 }
 
+
+function keyPressed(event) {
+    var key = event.keyCode;
+    console.log(key);
+    let drot = 0.1;
+    switch(key) {
+        case 107: screen.setZoom( screen.Zoom*1.2 ); console.log( "Zoom: ", screen.Zoom); break;
+        case 109: screen.setZoom( screen.Zoom*0.8 ); console.log( "Zoom: ", screen.Zoom); break;
+        case 37: Globals.angle += 0.02; break;
+        case 39: Globals.angle -= 0.02; break;
+    } 
+    //console.log( camera.pos  );
+    //console.log( camera.rot );
+}
+
+
 window.onload = function () {
 
     canvas        = document.getElementById('c');
@@ -108,8 +185,11 @@ window.onload = function () {
     canvas.height = 512;
     screen = new Screen2D( canvas, ctx, 5.0 );
 
-    Globals.thisUnit  = makeShip();
-    Globals.tank1     = makeTank();
+    Globals.testFoilPlatform = makeFoilPlatform(); 
+    Globals.thisUnit         = makeShip();  units.push( Globals.thisUnit );
+    Globals.tank1            = makeTank();
+
+    window.addEventListener("keydown", keyPressed, false);
 
     canvas.onmousedown = function (e) {
         let mouse = screen.mouse;

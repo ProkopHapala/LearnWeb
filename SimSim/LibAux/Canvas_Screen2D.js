@@ -29,11 +29,19 @@ class Screen2D{
 
     point( x,y          ){ return py*this.invZoom + this.y0; }
     line ( x0,y0, x1,y1 ){ 
+        this.ctx.beginPath(); 
         this.ctx.moveTo( this.x2pix(x0), this.y2pix(y0) );   
         this.ctx.lineTo( this.x2pix(x1), this.y2pix(y1) ); 
         this.ctx.stroke(); 
     }
+    vecInPos( dx,dy, x0,y0 ){
+        this.ctx.beginPath();  
+        this.ctx.moveTo( this.x2pix(x0), this.y2pix(y0) );   
+        this.ctx.lineTo( this.x2pix(x0+dx), this.y2pix(y0+dy) ); 
+        this.ctx.stroke(); 
+    }
     rect ( x0,y0, x1,y1, filled ){ 
+        this.ctx.beginPath(); 
         this.ctx.rect( this.x2pix(x0), this.y2pix(y0), this.x2pix(x1), this.y2pix(y1) );
         if( filled ){ ctx.fill(); }else{ ctx.stroke(); };
     }
@@ -43,6 +51,7 @@ class Screen2D{
         let a  = 6.28318530718/N; 
         let sa = Math.sin(a);
         let ca = Math.cos(a);
+        this.ctx.beginPath(); 
         ctx.moveTo( this.x2pix( x0+dx), this.y2pix(y0+dy) );
         for( let i=0; i<=N; i++ ){
             ctx.lineTo( this.x2pix( x0+dx), this.y2pix(y0+dy) );
@@ -90,6 +99,14 @@ class Screen2D{
         ctx.beginPath();
         ctx.moveTo( x0, 0.0 ); ctx.lineTo ( x0, this.canvas.height ); 
         ctx.moveTo( 0.0, y0 );  ctx.lineTo( this.canvas.width, y0 ); 
+        ctx.stroke();
+    }
+
+    axhline( x, xscale ){
+        let ctx = this.ctx;    
+        let x0=this.x2pix( xscale[0]+x*xscale[1] );
+        ctx.beginPath();
+        ctx.moveTo( x0, 0.0 ); ctx.lineTo ( x0, this.canvas.height ); 
         ctx.stroke();
     }
 

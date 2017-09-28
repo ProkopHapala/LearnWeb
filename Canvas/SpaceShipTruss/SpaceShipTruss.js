@@ -77,7 +77,6 @@ function initScene() {
     let kind_zigOut = {S:1.0,mat:mater};
     Globals.truss1.makeGirder_1( vec3.fromValues(0.0,0.0,0.0), vec3.fromValues(10.0,5.0,0.0), vec3.fromValues(0.0,1.0,0.0), 6, 2.0, kind_long, kind_perp, kind_zigIn, kind_zigOut );
     
-
     /*
     let nodes  = Globals.truss1.nodes;
     let sticks = Globals.truss1.sticks; 
