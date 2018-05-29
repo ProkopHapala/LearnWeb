@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>05.10 - Custom fragment shader</title>
+        <style> body { margin: 0; overflow: scroll;; } </style>
+    </head>
+    
+    <script>
+        shader_name = ""//https://www.w3schools.com/js/js_output.asp
+
+        function getShaderCode(){
+            var shader_code = "";
+            // shader_name =  document.getElementById( "slShader" ).value;
+            shader_name =  "Input";
+            s = "src"+shader_name;
+            console.log(s);
+	        shader_code += document.getElementById( s ).contentDocument.body.childNodes[0].textContent;
+	        return shader_code;
+        }
+        
+        function Sphere(pos,r){ var str="new Sphere(pos"+pos+",R="+r+");"; document.write( str+"<BR>" ); return str; }
+        //function Sphere(){}
+        
+        function updateSurface(){ updateShader(getShaderCode()); }
+        function initThis(){ 
+            //init_GLSLScreen("GLScreen",getShaderCode()); 
+            
+            input1 = 5;
+            input2 = 6;
+            code = getShaderCode();
+            eval( code );
+
+            //output = Sphere( [16,15,14], 5 );
+            document.write(output1+"<BR>");
+            document.write(output2+"<BR>");
+        } 
+    </script>
+    <body onLoad="initThis()">
+        <!--div style="width: 640px;height: 480px;" id="GLScreen"></div-->
+        <div style="width: 1200px;">
+            <BR>
+            <object data="exampleInput.js" id="srcInput"></object>Input</BR>   
+        </div>
+    </body>
+</html>
