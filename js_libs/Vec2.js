@@ -73,7 +73,7 @@ Vec2.prototype = {
     cross :         function( a ){ returnthis. x*a.y - this.y*a.x; },
 
         mul_cmplx:  function(    b ){                         var x_ =  this.x*b.x - this.y*b.y;   this.y =  this.y*b.x + this.x*b.y;   this.x=x_;  },
-    pre_mul_cmplx:  function( a    ){                         var x_ =  a.x*this.x - a.ythis.y;    this.y =  a.y* this.x + a.x* this.y; this.x=x_;  },
+    pre_mul_cmplx:  function( a    ){                         var x_ =  a.x*this.x - a.y*this.y;    this.y =  a.y* this.x + a.x* this.y; this.x=x_;  },
     set_mul_cmplx:  function( a, b ){                         var x_ =  a.x*b.x - a.y*b.y;         this.y =  a.y*b.x + a.x*b.y;         this.x=x_;  },
     set_udiv_cmplx: function( a, b ){                         var x_ =  a.x*b.x + a.y*b.y;         this.y =  a.y*b.x - a.x*b.y;         this.x=x_;  },
     set_div_cmplx:  function( a, b ){  var ir2 = 1/b.norm2(); var x_ = (a.x*b.x + a.y*b.y)*ir2;    this.y = (a.y*b.x - a.x*b.y)*ir2;    this.x=x_;  },

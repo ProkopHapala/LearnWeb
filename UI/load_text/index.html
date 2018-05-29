@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>05.10 - Custom fragment shader</title>
+        <style> body { margin: 0; overflow: scroll;; } </style>
+    </head>
+    <body>
+
+        <script> 
+        
+            function makeDownloadableFile( text, id, fname ){
+                type  = 'text/plain';
+                var a = document.getElementById( id );
+                var file = new Blob([text], {type: type});
+                a.href = URL.createObjectURL(file);
+                a.download = fname;
+            }
+        
+            function selectText(element){
+                console.log(element.value);
+                text = document.getElementById('txInput').value + document.getElementById(element.value).contentDocument.body.childNodes[0].textContent;
+                document.getElementById('txOutput').value = text;
+                makeDownloadableFile( text, "Result", "result.txt" );
+            }
+           
+        </script>
+        <!--input type="file" id="upload" name="upload" style="visibility: hidden; width: 1px; height: 1px" multiple /-->
+        <!--a href="" onclick="document.getElementById('upload').click(); return false">Upload</a-->
+        <!--input type="file" id="upload" name="upload" multiple-->
+        <!--a href="" id="a">click here to download your file</a-->
+        <!--button onclick="download('file text', 'myfilename.txt', 'text/plain')">Create file</button-->
+        <div style="width: 1200px;">
+        <select id="slPrimitives" onChange="selectText(this)">
+          <option value="text1"  selected="selected" >text1 </option>
+          <option value="text2"                      >text2 </option>
+          <option value="text3"                      >text3 </option>
+          <option value="text4"                      >text4 </option>
+        </select>
+             <object data="text1.txt"  id="text1" style="visibility: hidden; width: 1px; height: 1px"></object>
+             <object data="text2.txt"  id="text2" style="visibility: hidden; width: 1px; height: 1px"></object>
+             <object data="text3.txt"  id="text3" style="visibility: hidden; width: 1px; height: 1px"></object>
+             <object data="text4.txt"  id="text4" style="visibility: hidden; width: 1px; height: 1px"></object>
+             Input  </BR> <textarea id="txInput" cols="40" rows="5" onChange="updateShader(this)">INPUT INPUT INPUT </textarea></BR>
+             <a href="" id="Result">Result</a></BR> <textarea id="txOutput" cols="40" rows="5" onChange="updateShader(this)"></textarea></BR>
+        </div>
+    </body>
+</html>
