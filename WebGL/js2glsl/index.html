@@ -7,11 +7,6 @@
 		<style> body { margin: 0; overflow: scroll;; } </style>
 	</head>
     <body>
-
-
-
-
-
        <!--script src="three.min.js"></script-->
        <!--script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script--> 
        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script> 
@@ -25,7 +20,28 @@
 			
 			function init() {
 				//camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 10000 );
-				camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 10000 );
+				
+				// renderer
+				let aspectRatio=1.0;
+				//renderer = new THREE.WebGLRenderer( { antialias: false } );
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				//renderer.setClearColor( scene.fog.color );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				//renderer.setSize( window.innerWidth, window.innerHeight );  // Full Screen
+				//aspectRatio = window.innerWidth / window.innerHeight;
+				//renderer.setSize( 2000, 2000 );  // Supersize
+				screenBox = document.getElementById("GLScreen"); 
+				renderer.setSize( screenBox.clientWidth, screenBox.clientHeight );
+				aspectRatio = screenBox.clientWidth/screenBox.clientHeight;
+				
+				//container = document.getElementById( 'container' );
+				//container = document.getElementById( 'glcanvas' );
+				container = document.getElementById( "GLScreen" );
+				container.appendChild( renderer.domElement );
+
+				window.addEventListener( 'resize', onWindowResize, false );
+				
+				camera = new THREE.PerspectiveCamera( 60, aspectRatio, 1, 10000 );
 				camera.position.z = 500;
 				controls = new THREE.TrackballControls( camera );
 				controls.rotateSpeed = 1.0;
@@ -73,19 +89,6 @@
 				light = new THREE.AmbientLight( 0x222222 );
 				scene.add( light );
 
-				// renderer
-				renderer = new THREE.WebGLRenderer( { antialias: false } );
-				//renderer.setClearColor( scene.fog.color );
-				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-
-				//container = document.getElementById( 'container' );
-				//container = document.getElementById( 'glcanvas' );
-				container = document.getElementById( "GLScreen" );
-				container.appendChild( renderer.domElement );
-
-				window.addEventListener( 'resize', onWindowResize, false );
-
 				render();
 			}
 
@@ -114,21 +117,26 @@
 				init();
        			animate();
 			}
-			function updateSurface(){
-				console.log("updateSurface()");
+			function updateScene(element){
+				console.log("updateScene"+element);
 			}
 	   </script>
 
 	<body onLoad="main()">
-		
-		<div style="width: 1200px;">
+		<div style="width: 800px;height: 400px;" id="GLScreen"></div>
+        <div style="width: 1200px;">
+             Scene script </BR> 
+             <textarea id="txtScene" cols="40" rows="5" onChange="updateScene(this)">
+var s1=new Sphere( [0.0,0.0,0.0], 200.0 );
+             </textarea></BR>          
+        </div>
+			<div style="width: 1200px;">
 			<select id="slShader" onChange="updateSurface()">
 				<option value="Vorticity" >Vorticity</option>
 				<option value="Harmonics" >Harmonics</option>
 			</select>
 			<BR>
 		</div>
-		<div style="width: 640px;height: 480px;" id="GLScreen"></div>
 	</body>
 
     </body>
