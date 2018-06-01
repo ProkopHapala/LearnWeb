@@ -1,6 +1,5 @@
 "use strict";
 
-
 function printWithLineNumbers( str ){
     let lines = str.split('\n');
     for( let i=0; i<lines.length; i++ ){

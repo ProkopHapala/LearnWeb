@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+		<title>three.js webgl - trackball controls</title>
+		<meta charset="utf-8">
+		<!--meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"-->
+		<style> body { margin: 0; overflow: scroll;; } </style>
+	</head>
+    <body>
+       <!--script src="three.min.js"></script-->
+       <!--script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script--> 
+       <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script> 
+       <script src="../../js_libs/ThreeJS/TrackballControls.js"></script>
+	   <script src="../../js_libs/ThreeJS/OBJLoader.js"></script>
+	   <script src="../../js_libs/ThreeJS/ThreeJS_aux.js"></script>
+       <script src="js2glsl.js"></script> 
+       <script>
+			//"use strict";
+			var screen;
+
+			function main() {
+
+				IMPLEMENT_Vector3_FUNCS ();
+
+				var myVec = new THREE.Vector3();
+				myVec.prokop_op();
+				console.log( myVec );
+
+
+				screen  = new THREE.Screen( document.getElementById("GLScreen") );
+
+				//eval( "" );
+				eval( `
+					var s1=new Sphere( [0.0,0.0,0.0], 200.0 );
+					var s1=new Cylinder( [0.0,0.0,0.0], [100.0,100.0,100.0], 50.0 );
+				` );
+				var wire_mat    = new THREE.MeshBasicMaterial( { color: 0x808080, wireframe: true } );
+				for(i=0;i<scene_root.length; i++){
+					screen.scene.add( scene_root[i].toThreeJS( wire_mat ) );
+				}
+
+				screen.render();
+				screen.animate();
+			}
+
+	   </script>
+
+	<body onLoad="main()">
+		<div style="width: 800px;height: 400px;" id="GLScreen"></div>
+        <div style="width: 1200px;">
+             Scene script </BR> 
+             <!--textarea id="txtScene" cols="40" rows="5" onChange="updateScene(this)"-->
+			 <textarea id="txtScene" cols="40" rows="5" onChange="updateScene(this)">
+var s1=new Sphere( [0.0,0.0,0.0], 200.0 );
+			 </textarea></BR>
+			 <button type="button" onclick="updateScene(this)" >update</button>      
+        </div>
+			<div style="width: 1200px;">
+			<select id="slShader" onChange="updateSurface()">
+				<option value="Vorticity" >Vorticity</option>
+				<option value="Harmonics" >Harmonics</option>
+			</select>
+			<BR>
+		</div>
+	</body>
+
+    </body>
+</html>

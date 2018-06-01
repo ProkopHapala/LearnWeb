@@ -251,9 +251,11 @@ THREE.TrackballControls = function ( object, domElement ) {
 		event.preventDefault();
 		event.stopPropagation();
 		if ( _state === STATE.NONE ) {
+			//console.log( "event.button "+event.button+" "+STATE.ROTATE );
 			_state = event.button;
 		}
 		if ( _state === STATE.ROTATE && ! _this.noRotate ) {
+			//console.log( "STATE.ROTATE ", event.pageX, event.pageY );
 			_moveCurr.copy( getMouseOnCircle( event.pageX, event.pageY ) );
 			_movePrev.copy( _moveCurr );
 		} else if ( _state === STATE.ZOOM && ! _this.noZoom ) {
