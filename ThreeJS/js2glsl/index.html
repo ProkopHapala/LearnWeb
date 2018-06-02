@@ -17,6 +17,7 @@
 		// https://stackoverflow.com/questions/50654388/is-there-editor-with-working-go-to-definition-for-multiple-javascript-files-li
 		//"use strict";
 		var screen;
+		var root_group = new THREE.Group();
 
 		function main() {
 
@@ -26,20 +27,62 @@
 			myVec.prokop_op();
 			console.log( myVec );
 
-			screen  = new THREE.Screen( document.getElementById("GLScreen") );
+			screen       = new THREE.Screen( document.getElementById("GLScreen") );
+			screen.scene.add(root_group);
 
 			updateScene();
+
+			var src_frag = document.getElementById("srcFrag").contentDocument.body.childNodes[0].textContent;
+			//console.log( src_frag );
+			screen.initShaderScreen(  THREE.ShaderLib['normal'].vertexShader, src_frag );
+
+			screen.userUpdate = updateLGLSLScreen;
 
 			//screen.render();
 			screen.animate();
 		}
+
+		function updateLGLSLScreen(screen){
+
+			var mesh = screen.scene.getObjectByName("glslScreen");
+
+			// place screen relative to camera
+			//https://stackoverflow.com/questions/37446330/setting-matrixworld-property-of-a-three-js-object
+			// https://threejs.org/docs/#manual/introduction/Matrix-transformations
+			// https://stackoverflow.com/questions/22467614/threejs-updating-existing-objects-with-matrix4
+			mesh.matrixAutoUpdate = false;
+			// set rotation facing to camera
+			mesh.matrix.extractRotation( screen.camera.matrix );
+
+			/* // Rotate
+			{	let mrot = tmps.m4_1;
+				mrot.makeRotationZ ( 4.5 );
+				mesh.matrix.multiply(mrot);
+			}
+			*/
+
+			// move to backgorund
+			tmps.v_pos.copy( screen.camera.position );
+			screen.camera.getWorldDirection( tmps.v_fw );
+			tmps.v_pos.addScaledVector ( tmps.v_fw , 1000 );
+			mesh.matrix.setPosition ( tmps.v_pos );
+
+
+			//mesh.updateMatrix();
+			//mesh.updateMatrixWorld();
+			//console.log( mesh.matrixWorld );
+			//mesh.updateMatrix();
+		}
+
+
 
 		function updateScene(element){
 			console.log("updateScene");
 			
 			// clean
 			scene_root = [];               
-			THREE.disposeHierarchy( screen.scene );
+			//THREE.disposeHierarchy( screen.scene );
+			THREE.disposeHierarchy( root_group );
 
 			// load
 			//let txt = document.getElementById('txtScene').text;
@@ -49,12 +92,13 @@
 			eval(txt);
 			
 			// execute
+			
 			for(i=0;i<scene_root.length; i++){
-				screen.scene.add( scene_root[i].toThreeJS( screen.materials.wire ) );
+				//screen.scene.add( scene_root[i].toThreeJS( screen.materials.wire ) );
+				root_group.add( scene_root[i].toThreeJS( screen.materials.wire ) );
 			}
-
 			screen.render();
-
+			
 			// shader_code += document.getElementById("txtRayTracer").contentDocument.body.childNodes[0].textContent.replace("OUTPUT_PIXEL",str_PixelMap);
 			//
 		}
@@ -79,6 +123,7 @@ var s1=new Cylinder( [0.0,0.0,0.0], [100.0,100.0,100.0], 50.0 );
 		</textarea></BR>
 		<button type="button" onclick="updateScene(this)" >update</button>      
 		<a href="" id="urlResult">Save</a></BR>
+		<object data="shader_1.glslf" id="srcFrag"></object> </BR> 
 	<!--
 	</div>
 		<select id="slPrimitives" onChange="selectText(this)">
