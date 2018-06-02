@@ -18,6 +18,7 @@
 		//"use strict";
 		var screen;
 		var root_group = new THREE.Group();
+		var str_PixelMap = "vec4( (c_diffuse + c_specular*mat.gloss)*mat.color + vec3(0.1,0.1,0.2)*mat.color, 1.0 );";
 
 		function main() {
 
@@ -32,8 +33,10 @@
 
 			updateScene();
 
-			var src_frag = document.getElementById("srcFrag").contentDocument.body.childNodes[0].textContent;
-			//console.log( src_frag );
+			//var src_frag = document.getElementById("srcFrag").contentDocument.body.childNodes[0].textContent;
+			var src_frag = composeFragCode();
+			console.log( src_frag );
+
 			screen.initShaderScreen(  THREE.ShaderLib['normal'].vertexShader, src_frag );
 
 			screen.userUpdate = updateLGLSLScreen;
@@ -68,12 +71,33 @@
 			mesh.matrix.setPosition ( tmps.v_pos );
 
 
+			//screen.uniforms.camMat.value.getNormalMatrix( screen.camera.matrixWorldInverse );
+			screen.uniforms.camMat.value.getNormalMatrix( screen.camera.matrixWorld );
+
+
 			//mesh.updateMatrix();
 			//mesh.updateMatrixWorld();
 			//console.log( mesh.matrixWorld );
 			//mesh.updateMatrix();
 		}
 
+
+		function composeFragCode(){
+			var shader_code = "";
+			var txtScene = `
+			Sphere   sph1 = Sphere  ( vec3(0.0,0.0,0.0), 1.0 );
+			Cylinder cyl1 = Cylinder( vec3(0.0,-1.0,0.0), vec3(0.0,1.0,0.0), 0.5      );
+			ADD( sph1 );
+			ADD( cyl1 );
+			`;
+
+			txtScene = "vec4 scene( Ray ray ){\n\tvec4 hit = vec4( POSITIVE_INF, vec3(0.0) );\n\tvec2 ts1;\n" + txtScene + "\n\treturn hit;\n}";
+
+			shader_code += document.getElementById("srcPrimitives").contentDocument.body.childNodes[0].textContent;
+			shader_code += txtScene;
+			shader_code += document.getElementById("srcRayTracer").contentDocument.body.childNodes[0].textContent.replace("OUTPUT_PIXEL", str_PixelMap);
+			return shader_code;
+		}
 
 
 		function updateScene(element){
@@ -124,6 +148,8 @@ var s1=new Cylinder( [0.0,0.0,0.0], [100.0,100.0,100.0], 50.0 );
 		<button type="button" onclick="updateScene(this)" >update</button>      
 		<a href="" id="urlResult">Save</a></BR>
 		<object data="shader_1.glslf" id="srcFrag"></object> </BR> 
+		<object data="Primitives.glslf" id="srcPrimitives"></object> </BR> 
+		<object data="RayTracer.glslf" id="srcRayTracer"></object> </BR> 
 	<!--
 	</div>
 		<select id="slPrimitives" onChange="selectText(this)">

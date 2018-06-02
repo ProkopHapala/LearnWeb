@@ -39,37 +39,6 @@ THREE.Screen = function ( container ) {
         return controls;
     }
 
-    this.initShaderScreen = function( src_vert, src_frag ) {
-
-        //basicShader = THREE.ShaderLib['normal'];
-        let uniforms = {
-            time: { value: 1.0 },
-            resolution: { value: new THREE.Vector2() },
-            camMat: { value: new THREE.Matrix3() }
-        };
-        uniforms.resolution.value.x = _this.renderer.domElement.width;
-        uniforms.resolution.value.y = _this.renderer.domElement.height;
-
-        let matGLSL = new THREE.ShaderMaterial({
-            uniforms:       uniforms,
-            vertexShader:   src_vert,
-            fragmentShader: src_frag,
-        });
-
-        try {
-            var mesh = _this.scene.getObjectByName("glslScreen");
-            _this.scene.remove(mesh);
-        } catch (err) {
-            console.log(" updateShader cannot remove Mesh1");
-        };
-    
-        //mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry(100, 100), matGLSL );
-        mesh = new THREE.Mesh( new THREE.PlaneGeometry(10000, 10000), matGLSL );
-        mesh.name = "glslScreen";
-        _this.scene.add(mesh);
-    }
-
-
     function initMaterials(){
         return {
             wire    : new THREE.MeshBasicMaterial( { color: 0x808080, wireframe: true } ),
@@ -113,6 +82,42 @@ THREE.Screen = function ( container ) {
                 _this.renderer.render( _this.scene, _this.camera );
             };
     }() );
+
+    this.initShaderScreen = function( src_vert, src_frag ) {
+        //basicShader = THREE.ShaderLib['normal'];
+        let uniforms = {
+            time: { value: 1.0 },
+            resolution: { value: new THREE.Vector2() },
+            camMat: { value: new THREE.Matrix3() }
+        };
+        uniforms.resolution.value.x = _this.renderer.domElement.width;
+        uniforms.resolution.value.y = _this.renderer.domElement.height;
+
+        _this.uniforms = uniforms;
+
+        _this.updateScreenShader( src_vert, src_frag );
+    }
+
+    this.updateScreenShader = function( src_vert, src_frag ) {
+        // FIXME : maybe we should only update shader rather than re-create both shader and mesh
+        try {
+            var mesh = _this.scene.getObjectByName("glslScreen");
+            mesh.material.dispose();
+            mesh.dispose();
+            _this.scene.remove(mesh);
+        } catch (err) {
+            console.log("updateScreenShader: glslScreen mesh not present");
+        };
+        let matGLSL = new THREE.ShaderMaterial({
+            uniforms:       _this.uniforms,
+            vertexShader:   src_vert,
+            fragmentShader: src_frag,
+        });
+        //mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry(100, 100), matGLSL );
+        mesh = new THREE.Mesh( new THREE.PlaneGeometry(10000, 10000), matGLSL );
+        mesh.name = "glslScreen";
+        _this.scene.add(mesh);
+    }
 
 }
 
