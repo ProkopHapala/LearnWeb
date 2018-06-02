@@ -11,6 +11,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 	this.object = object;
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
 	// API
+	this.bPreventDefaultEvents = false;
 	this.enabled = true;
 	this.screen = { left: 0, top: 0, width: 0, height: 0 };
 	this.rotateSpeed = 1.0;
@@ -248,8 +249,10 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	function mousedown( event ) {
 		if ( _this.enabled === false ) return;
-		event.preventDefault();
-		event.stopPropagation();
+		if( _this._bPreventDefaultEvents ){
+			event.preventDefault();
+			event.stopPropagation();
+		}
 		if ( _state === STATE.NONE ) {
 			//console.log( "event.button "+event.button+" "+STATE.ROTATE );
 			_state = event.button;
@@ -274,8 +277,10 @@ THREE.TrackballControls = function ( object, domElement ) {
 	function mousemove( event ) {
         //window.alert("mousemove");        
 		if ( _this.enabled === false ) return;
-		event.preventDefault();
-		event.stopPropagation();
+		if( _this._bPreventDefaultEvents ){
+			event.preventDefault();
+			event.stopPropagation();
+		}
 		//console.log("mousemove "+_state+" must be  "+ STATE.ROTATE);
 		if ( _state === STATE.ROTATE && ! _this.noRotate ) {
 			_movePrev.copy( _moveCurr );
@@ -290,8 +295,10 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	function mouseup( event ) {
 		if ( _this.enabled === false ) return;
-		event.preventDefault();
-		event.stopPropagation();
+		if( _this._bPreventDefaultEvents ){
+			event.preventDefault();
+			event.stopPropagation();
+		}
 		_state = STATE.NONE;
 		document.removeEventListener( 'mousemove', mousemove );
 		document.removeEventListener( 'mouseup', mouseup );
@@ -300,8 +307,10 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	function mousewheel( event ) {
 		if ( _this.enabled === false ) return;
-		event.preventDefault();
-		event.stopPropagation();
+		if( _this._bPreventDefaultEvents ){
+			event.preventDefault();
+			event.stopPropagation();
+		}
 		switch ( event.deltaMode ) {
             case 2:  _zoomStart.y -= event.deltaY * 0.025;  break;
 			case 1: _zoomStart.y -= event.deltaY * 0.01; break;
@@ -335,8 +344,10 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	function touchmove( event ) {
 		if ( _this.enabled === false ) return;
-		event.preventDefault();
-		event.stopPropagation();
+		if( _this._bPreventDefaultEvents ){
+			event.preventDefault();
+			event.stopPropagation();
+		}
 		switch ( event.touches.length ) {
 			case 1:
 				_movePrev.copy( _moveCurr );
@@ -369,7 +380,10 @@ THREE.TrackballControls = function ( object, domElement ) {
 	}
 
 	function contextmenu( event ) {
-		event.preventDefault();
+		if( _this._bPreventDefaultEvents ){
+			event.preventDefault();
+			//event.stopPropagation();
+		}
 	}
 
 	this.dispose = function() {

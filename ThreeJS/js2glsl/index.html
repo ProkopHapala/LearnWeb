@@ -1,68 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-		<title>three.js webgl - trackball controls</title>
-		<meta charset="utf-8">
-		<!--meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"-->
-		<style> body { margin: 0; overflow: scroll;; } </style>
-	</head>
-    <body>
-       <!--script src="three.min.js"></script-->
-       <!--script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script--> 
-       <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script> 
-       <script src="../../js_libs/ThreeJS/TrackballControls.js"></script>
-	   <script src="../../js_libs/ThreeJS/OBJLoader.js"></script>
-	   <script src="../../js_libs/ThreeJS/ThreeJS_aux.js"></script>
-       <script src="js2glsl.js"></script> 
-       <script>
-			//"use strict";
-			var screen;
+<head>
+	<title>three.js webgl - trackball controls</title>
+	<meta charset="utf-8">
+	<!--meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"-->
+	<style> body { margin: 0; overflow: scroll;; } </style>
 
-			function main() {
+	<!--script src="three.min.js"></script-->
+	<!--script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script--> 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script> 
+	<script src="../../js_libs/ThreeJS/TrackballControls.js"></script>
+	<script src="../../js_libs/ThreeJS/OBJLoader.js"></script>
+	<script src="../../js_libs/ThreeJS/ThreeJS_aux.js"></script>
+	<script src="js2glsl.js"></script> 
+	<script>
+		// https://stackoverflow.com/questions/50654388/is-there-editor-with-working-go-to-definition-for-multiple-javascript-files-li
+		//"use strict";
+		var screen;
 
-				IMPLEMENT_Vector3_FUNCS ();
+		function main() {
 
-				var myVec = new THREE.Vector3();
-				myVec.prokop_op();
-				console.log( myVec );
+			IMPLEMENT_Vector3_FUNCS ();
 
+			var myVec = new THREE.Vector3();
+			myVec.prokop_op();
+			console.log( myVec );
 
-				screen  = new THREE.Screen( document.getElementById("GLScreen") );
+			screen  = new THREE.Screen( document.getElementById("GLScreen") );
 
-				//eval( "" );
-				eval( `
-					var s1=new Sphere( [0.0,0.0,0.0], 200.0 );
-					var s1=new Cylinder( [0.0,0.0,0.0], [100.0,100.0,100.0], 50.0 );
-				` );
-				var wire_mat    = new THREE.MeshBasicMaterial( { color: 0x808080, wireframe: true } );
-				for(i=0;i<scene_root.length; i++){
-					screen.scene.add( scene_root[i].toThreeJS( wire_mat ) );
-				}
+			updateScene();
 
-				screen.render();
-				screen.animate();
+			//screen.render();
+			screen.animate();
+		}
+
+		function updateScene(element){
+			console.log("updateScene");
+			
+			// clean
+			scene_root = [];               
+			THREE.disposeHierarchy( screen.scene );
+
+			// load
+			//let txt = document.getElementById('txtScene').text;
+			let txt = document.getElementById('txtScene').value;
+			console.log(txt);
+			makeDownloadableFile( txt, "urlResult", "result.txt" );
+			eval(txt);
+			
+			// execute
+			for(i=0;i<scene_root.length; i++){
+				screen.scene.add( scene_root[i].toThreeJS( screen.materials.wire ) );
 			}
 
-	   </script>
+			screen.render();
 
-	<body onLoad="main()">
-		<div style="width: 800px;height: 400px;" id="GLScreen"></div>
-        <div style="width: 1200px;">
-             Scene script </BR> 
-             <!--textarea id="txtScene" cols="40" rows="5" onChange="updateScene(this)"-->
-			 <textarea id="txtScene" cols="40" rows="5" onChange="updateScene(this)">
+			// shader_code += document.getElementById("txtRayTracer").contentDocument.body.childNodes[0].textContent.replace("OUTPUT_PIXEL",str_PixelMap);
+			//
+		}
+
+		function makeDownloadableFile( text, id, fname ){
+			var a = document.getElementById( id );
+			var file = new Blob([text], {type: 'text/plain'});
+			a.href = URL.createObjectURL(file);
+			a.download = fname;
+		}
+
+	</script>	
+</head>
+
+<body onLoad="main()">
+	<div style="width: 800px;height: 400px;" id="GLScreen"></div>
+	<div style="width: 1200px;">
+		Scene script </BR> 
+		<textarea id="txtScene" cols="40" rows="5" onChange="updateScene(this)">
 var s1=new Sphere( [0.0,0.0,0.0], 200.0 );
-			 </textarea></BR>
-			 <button type="button" onclick="updateScene(this)" >update</button>      
-        </div>
-			<div style="width: 1200px;">
-			<select id="slShader" onChange="updateSurface()">
-				<option value="Vorticity" >Vorticity</option>
-				<option value="Harmonics" >Harmonics</option>
-			</select>
-			<BR>
+var s1=new Cylinder( [0.0,0.0,0.0], [100.0,100.0,100.0], 50.0 );
+		</textarea></BR>
+		<button type="button" onclick="updateScene(this)" >update</button>      
+		<a href="" id="urlResult">Save</a></BR>
+	<!--
+	</div>
+		<select id="slPrimitives" onChange="selectText(this)">
+			<option value="text1"  selected="selected" >text1 </option>
+			<option value="text2"                      >text2 </option>
+			<option value="text3"                      >text3 </option>
+			<option value="text4"                      >text4 </option>
+		</select>
+			<object data="text1.txt"  id="text1" style="visibility: hidden; width: 1px; height: 1px"></object>
+			<object data="text2.txt"  id="text2" style="visibility: hidden; width: 1px; height: 1px"></object>
+			<object data="text3.txt"  id="text3" style="visibility: hidden; width: 1px; height: 1px"></object>
+			<object data="text4.txt"  id="text4" style="visibility: hidden; width: 1px; height: 1px"></object>
+			Input  </BR> <textarea id="txInput" cols="40" rows="5" onChange="updateShader(this)">INPUT INPUT INPUT </textarea></BR>
+			<a href="" id="Result">Result</a></BR> <textarea id="txOutput" cols="40" rows="5" onChange="updateShader(this)"></textarea></BR>
 		</div>
-	</body>
-
-    </body>
+		
+		<BR>
+	</div>
+	-->
+</body>
 </html>
