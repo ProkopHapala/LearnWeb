@@ -37,19 +37,21 @@
 
 <body onLoad="main()">
 	<div style="width: 800px;height: 400px;" id="GLScreen"></div>
-	<div style="width: 1200px;">
-		Scene script </BR> 
-		<button type="button" onclick="updateScene(this)" >update</button>  </BR>
-		<textarea id="txtScene" cols="100" rows="30" onChange="updateScene(this)"> </textarea></BR>
-		<textarea id="txtLog" cols="100" rows="5" > </textarea></BR>
-		<a href="" id="urlResult">Save</a></BR>
 	</div>
+		<button type="button" onclick="updateScene(this)" >update</button>
+		<a href="" id="urlResult">Save</a>
 		<select id="slPrimitives" onChange="selectText(this)">
 			<option value="objSpaceShip1"  selected="selected" >SpaceShip1</option>
 			<option value="objSpaceShip2"                      >SpaceShip2</option>
 		</select>
 		<object data="data/SpaceShip1.js"  id="objSpaceShip1" style="visibility: hidden; width: 1px; height: 1px"></object>
 		<object data="data/SpaceShip2.js"  id="objSpaceShip2" style="visibility: hidden; width: 1px; height: 1px"></object>
+		Scene script: </BR>
+	</div>
+	<div style="width: 1200px;">
+		<textarea id="txtScene" cols="100" rows="30" onChange="updateScene(this)"> </textarea></BR>
+		<textarea id="txtLog" cols="100" rows="5" > </textarea></BR>
+		
 	</div>
 </body>
 </html>

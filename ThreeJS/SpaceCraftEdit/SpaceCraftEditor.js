@@ -49,11 +49,19 @@ function updateScene(element){
 	
 	try {
 		eval(txt);
+		document.getElementById('txtLog').value = "Scene successfully compiled.";
 	}catch(err){
+		var vDebug = ""; 
+		for (var prop in err) {  
+		   vDebug += "property: "+ prop+ " value: ["+ err[prop]+ "]\n"; 
+		} 
+		vDebug += "ERROR: " + err.toString(); 
+		//vDebug += "HEY";
+		//status.rawValue = vDebug; 
+		//document.getElementById('txtLog').value = vDebug;
 		document.getElementById('txtLog').value = err.message;
 	}
 
-	
 
 	for(let i=0;i<scene_root.length; i++){
 		root_group.add( scene_root[i].toThreeJS( screen.materials.wire ) );
