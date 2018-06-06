@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>three.js webgl - trackball controls</title>
+	<meta charset="utf-8">
+	<!--meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"-->
+	<style> body { margin: 0; overflow: scroll;; } </style>
+	<!--script src="three.min.js"></script-->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script> 
+	<script src="../../js_libs/ThreeJS/TrackballControls.js"></script>
+	<script src="../../js_libs/ThreeJS/ThreeJS_aux.js"></script>
+	<script src="SpaceCraftEditor.js"></script> 
+	<script src="SpaceCraftComponents.js"></script> 
+	<script src="SpaceCraftDrawThreeJS.js"></script> 
+	<script>
+
+		function main() {
+
+			IMPLEMENT_Vector3_FUNCS ();
+
+			var myVec = new THREE.Vector3();
+			myVec.prokop_op();
+			console.log( myVec );
+
+			screen       = new THREE.Screen( document.getElementById("GLScreen") );
+			screen.scene.add(root_group);
+
+			//updateScene();
+			selectText( document.getElementById("slPrimitives") );
+
+			//screen.render();
+			screen.animate();
+		}
+
+	</script>	
+</head>
+
+<body onLoad="main()">
+	<div style="width: 800px;height: 400px;" id="GLScreen"></div>
+	<div style="width: 1200px;">
+		Scene script </BR> 
+		<button type="button" onclick="updateScene(this)" >update</button>  </BR>
+		<textarea id="txtScene" cols="100" rows="30" onChange="updateScene(this)"> </textarea></BR>
+		<textarea id="txtLog" cols="100" rows="5" > </textarea></BR>
+		<a href="" id="urlResult">Save</a></BR>
+	</div>
+		<select id="slPrimitives" onChange="selectText(this)">
+			<option value="objSpaceShip1"  selected="selected" >SpaceShip1</option>
+			<option value="objSpaceShip2"                      >SpaceShip2</option>
+		</select>
+		<object data="data/SpaceShip1.js"  id="objSpaceShip1" style="visibility: hidden; width: 1px; height: 1px"></object>
+		<object data="data/SpaceShip2.js"  id="objSpaceShip2" style="visibility: hidden; width: 1px; height: 1px"></object>
+	</div>
+</body>
+</html>
