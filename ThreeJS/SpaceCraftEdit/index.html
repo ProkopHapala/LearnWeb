@@ -6,7 +6,9 @@
 	<!--meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"-->
 	<style> body { margin: 0; overflow: scroll;; } </style>
 	<!--script src="three.min.js"></script-->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script> 
+	<!--script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script--> 
+	<script src="../../js_libs/ThreeJS/three.js"></script>
+	<script src="../../js_libs/ThreeJS/Draw3D.js"></script> 
 	<script src="../../js_libs/ThreeJS/TrackballControls.js"></script>
 	<script src="../../js_libs/ThreeJS/ThreeJS_aux.js"></script>
 	<script src="SpaceCraftEditor.js"></script> 
@@ -35,6 +37,38 @@
 
 			//updateScene();
 			selectText( document.getElementById("slPrimitives") );
+						
+			//var obj = new ;
+			var Vec3 = THREE.Vector3;
+			
+			
+			// =======  Lines
+			var verts = [];
+			var edges = [];
+			for(let i=0; i<100; i++){
+				let x = i * 0.5;
+				//verts.push( new Vec3( Math.sin(x),Math.sin(x), Math.sin(x), x ) );
+				verts.push( new Vec3( 50.0*Math.sin(x), 50.0*Math.cos(x), x ) );
+			}
+			//var geom = new THREE.LinesGeometry( verts );
+			var geom = THREE.makeLinesGeometry( verts );
+			var mat  = new THREE.LineBasicMaterial( { color:  0xffffff } );
+			var mesh = new THREE.Line( geom, mat );  
+			screen.scene.add(mesh);
+			
+
+			// =======  Parametric Geometry
+			
+			function myUVfunc(u,v){
+				let R = ( Math.sin( v*30.0 )*0.2+1.0 ) * 20.0;
+				return new Vec3( R*Math.cos(6.28*u), R*Math.sin(6.28*u), v*300.0  );
+			}
+			var geom = new THREE.ParametricGeometry( myUVfunc, 16, 50 );
+			geom.computeFaceNormals();
+			var mat  = new THREE.LineBasicMaterial( { color:  0xffffff } );
+			var mesh = new THREE.Mesh( geom, screen.materials.lambert );  
+			screen.scene.add(mesh);
+			
 
 			//screen.render();
 			screen.animate();

@@ -1,5 +1,7 @@
 "use strict";
 
+// test
+
 function makeTextSprite( message, parameters ){
 	if ( parameters === undefined ) parameters = {};
 	var  font  = parameters.hasOwnProperty("font")  ? parameters["font"]  : "Arial";
@@ -48,3 +50,7 @@ function trapezGeom( x0, y0, x1, y1, sym ){
     geom.computeFaceNormals();
     return geom;
 }
+
+
+
+
