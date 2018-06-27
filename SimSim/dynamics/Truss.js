@@ -6,7 +6,7 @@ glMatrix.ARRAY_TYPE = Float64Array;
 //      Material
 // ================
 
-var Material = function( Kpull, Kpush, Spull, Spush, density ){
+var TrussMaterial = function( Kpull, Kpush, Spull, Spush, density ){
     this.Spull  = Kpull; 
     this.Spush  = Kpush;
     this.Kpull  = Spull; 
@@ -18,7 +18,7 @@ var Material = function( Kpull, Kpush, Spull, Spush, density ){
 //      Node
 // ================
 
-var Node = function( id, pos, mass ){
+var TrussNode = function( id, pos, mass ){
     this.id    = id; 
     this.mass  = mass;
     this.pos   = pos;
@@ -60,6 +60,28 @@ var Truss = function( ){
     this.blocks = [];
 }
 
+Truss.prototype.clear = function(){
+    this.nodes  = [];
+    this.sticks = [];
+    this.blocks = [];
+}
+
+Truss.prototype.getPoints = function(){
+    let points = [];
+    for(let i=0; i<this.nodes.length; i++){
+        points.push( this.nodes[i].pos ); 
+    }
+    return points;
+}
+
+Truss.prototype.getIJs = function(){
+    let ijs = [];
+    for(let i=0; i<this.sticks.length; i++){
+        ijs.push( [ this.sticks[i].i,this.sticks[i].j ] ); 
+    }
+    return ijs;
+}
+
 Truss.prototype.evalStickForces = function(){
     let d  = vec2.create();
     //let f  = vec2.create();
@@ -97,7 +119,7 @@ Truss.prototype.prepareSticks = function(){
     }
 }
 
-Truss.prototype.clenForce = function(){
+Truss.prototype.cleanForce = function(){
     for( let i=0; i<nodes.length; i++ ){
         this.nodes[i].force.set(out, 0.0, 0.0, 0.0);
     }
@@ -114,7 +136,7 @@ Truss.prototype.moveNodes = function( dt ){
 }
 
 Truss.prototype.upadate = function( dt ){
-    this.clenForce( nodes );
+    this.cleanForce( nodes );
     this.evalStickForces( sticks, nodes );
     this.moveNodes( nodes, dt );
 }
@@ -126,7 +148,7 @@ Truss.prototype.makeStick = function( i, j, S, mat ){
 
 Truss.prototype.makeSolid = function( verts, edges, mass, kind  ){
     for( let i=0; i<verts.length; i++ ){
-        this.nodes.push( new Node( i, vec3.clone( verts[i] ), mass ) );
+        this.nodes.push( new TrussNode( i, vec3.clone( verts[i] ), mass ) );
     }
     for( let i=0; i<edges.length; i++ ){
         let ed = edges[i];
@@ -139,6 +161,9 @@ Truss.prototype.makeGirder_1 = function( p0, p1, up, n, width,   kind_long, kind
     //let kind_perp   = 1;
     //let kind_zigIn  = 2;
     //let kind_zigOut = 3;
+
+    //console.log("p0 p1 up ", p0, p1, up );
+
     up   = vec3.clone(up);
     let side = vec3.create();
     let dir  = vec3.create();
@@ -161,10 +186,10 @@ Truss.prototype.makeGirder_1 = function( p0, p1, up, n, width,   kind_long, kind
         let lt = dl*(1+2*i );
         let vtmp;
         let mass = 0.001;
-        vtmp = vec3.create(); vec3.lincomb( vtmp, p0, side, dir, 1.0, -width, lt    ); nodes.push( new Node( i00, vtmp, mass ) ); //points.push( p0 + side*-width + dir*(dl*(1+2*i  )) );
-        vtmp = vec3.create(); vec3.lincomb( vtmp, p0, side, dir, 1.0, +width, lt    ); nodes.push( new Node( i01, vtmp, mass ) ); //points.push( p0 + side*+width + dir*(dl*(1+2*i  )) );
-        vtmp = vec3.create(); vec3.lincomb( vtmp, p0, up,   dir, 1.0, -width, lt+dl ); nodes.push( new Node( i10, vtmp, mass ) ); //points.push( p0 + up  *-width + dir*(dl*(1+2*i+1)) );
-        vtmp = vec3.create(); vec3.lincomb( vtmp, p0, up,   dir, 1.0, +width, lt+dl ); nodes.push( new Node( i11, vtmp, mass ) ); //points.push( p0 + up  *+width + dir*(dl*(1+2*i+1)) );
+        vtmp = vec3.create(); vec3.lincomb( vtmp, p0, side, dir, 1.0, -width, lt    ); nodes.push( new TrussNode( i00, vtmp, mass ) ); //points.push( p0 + side*-width + dir*(dl*(1+2*i  )) );
+        vtmp = vec3.create(); vec3.lincomb( vtmp, p0, side, dir, 1.0, +width, lt    ); nodes.push( new TrussNode( i01, vtmp, mass ) ); //points.push( p0 + side*+width + dir*(dl*(1+2*i  )) );
+        vtmp = vec3.create(); vec3.lincomb( vtmp, p0, up,   dir, 1.0, -width, lt+dl ); nodes.push( new TrussNode( i10, vtmp, mass ) ); //points.push( p0 + up  *-width + dir*(dl*(1+2*i+1)) );
+        vtmp = vec3.create(); vec3.lincomb( vtmp, p0, up,   dir, 1.0, +width, lt+dl ); nodes.push( new TrussNode( i11, vtmp, mass ) ); //points.push( p0 + up  *+width + dir*(dl*(1+2*i+1)) );
         
         //console.log( i, nodes[i00].pos, nodes[i01].pos, nodes[i10].pos, nodes[i11].pos );
         

@@ -12,7 +12,7 @@ function Mat3() {
     this.c = new Vec3( 0.0, 0.0, 1.0 );
 }
 Mat3.prototype = {
-constructor: Matrix3,
+constructor: Mat3,
 isMat3: true,
 //_a: new Mat3(), _b: new Mat3(), _c: new Mat3()
 
@@ -22,7 +22,7 @@ set_outer:function( a, b ){
     this.c.x=a.z*b.x; this.c.y=a.z*b.y; this.c.z=a.z*b.z;
 },
 
-diag_add:function( TYPE f ){ this.a.x+=f; this.b.y+=f; this.c.z+=f; },
+diag_add:function( f ){ this.a.x+=f; this.b.y+=f; this.c.z+=f; },
 
 get:function(i){ switch(i){ case 0:return a; case 1:return b; case 2:return c; } },
 
@@ -233,7 +233,7 @@ rotate:function( angle, axis  ){
 
 dRotateToward:function (){
     var ax = new Vec3();
-    return dRotateToward( pivot, rot0, dPhi ){
+    return function dRotateToward( pivot, rot0, dPhi ){
         let piv  = this.get(pivot);
         let piv0 = rot0.get(pivot);
         ax.set_cross(piv,piv0);
@@ -393,4 +393,4 @@ toStringOrtho(){ return a.norm2()+" "+b.norm2()+" "+c.norm2()   +"    "+   a.dot
 
 };
 
-var Mat3Identity = Mat();
+var Mat3Identity = new Mat3();

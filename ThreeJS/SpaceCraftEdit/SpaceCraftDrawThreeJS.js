@@ -51,6 +51,62 @@ function trapezGeom( x0, y0, x1, y1, sym ){
     return geom;
 }
 
+SpaceCraft.prototype.draw = function( group ){
+	let mater = new TrussMaterial( 10.0, 10.0, 1.0, 1.0 );
+	let kind_long   = {S:1.0,mat:mater};
+	let kind_perp   = {S:1.0,mat:mater};
+	let kind_zigIn  = {S:1.0,mat:mater};
+	let kind_zigOut = {S:1.0,mat:mater};
+	// truss.makeGirder_1( vec3.fromValues(0.0,0.0,0.0), vec3.fromValues(1000.0,5.0,0.0), vec3.fromValues(0.0,1.0,0.0), 6, 20.0, kind_long, kind_perp, kind_zigIn, kind_zigOut );
+	
+	console.log( "SpaceCraft.draw ", this.girders.length );
+	
+	for(let o of this.nodes){
+		//console.log( "node : ", o.id, o);
+		this.truss.nodes.push( new TrussNode( this.truss.nodes.length, THREE.Vec3toArray( o.pos ), 0.0 ) );
+	}
+	for(let o of this.ropes){
+		//console.log(o.id, o);
+		this.truss.sticks.push( new Stick( o.node1.id ,o.node2.id, mater ) );
+	}
+	//console.log("this.truss.sticks ", this.truss.sticks );
+	printArray( this.truss.nodes  );
+	printArray( this.truss.sticks );
+	
+	for(let o of this.girders){
+	//for(let i=0; i<this.girders.length; i++ ){
+	//	let o = this.girders[i];
+		//console.log( "girder ", o );
+		//console.log( "girder ", o.node1.pos, o.node2.pos, o.up, o.nseg, o.width );
+		this.truss.makeGirder_1(          
+			THREE.Vec3toArray( o.node1.pos ), 
+			THREE.Vec3toArray( o.node2.pos ),
+			o.up,
+			o.nseg,
+			o.width,
+			kind_long, kind_perp, kind_zigIn, kind_zigOut
+		);
+	}
+	let ijs = this.truss.getIJs( );        //printArray(ijs);
+	let ps  = this.truss.getPoints( );     //printArray(ps );
+	let ps_ = THREE.Array2Vec3s( ps );     //printArray(ps_);
+	let geom = THREE.makeLinesGeometry( ps_, ijs );
+	let mat  = new THREE.LineBasicMaterial( { color:  0x808080 } );
+	let mesh = new THREE.Line( geom, mat );  
+	group.add(mesh);
+	
 
+	console.log(this.thrusters);
+	for(let o of this.thrusters){
+		console.log( "thrusters ", o, o.span, o.pose.pos );
+		let verts =  THREE.drawUV_Parabola( [16,16], new Vec2(0.05,0.0), new Vec2(1.0,6.28), o.span.y, -o.span.z, 0.5 );
+		//printArray(verts);
+		let geom = THREE.makeLinesGeometry( verts );
+		let mat  = new THREE.LineBasicMaterial( { color:  0x808080 } );
+		let mesh = new THREE.Line( geom, mat );  
+		mesh.position.setv( o.pose.pos );
+		// ToDo: rotation
+		group.add(mesh);
+	}
 
-
+} 

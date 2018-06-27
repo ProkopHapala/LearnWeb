@@ -47,10 +47,20 @@ function updateScene(element){
 	let matwire = screen.materials.wire;	
 	let scene = root_group;
 	
+	var s = defaultShip;
+
+	s.clear();
+
+	console.log( s.rope );
+	console.log( s.thruster );
 	try {
+		//console.log( "TO eval " );
 		eval(txt);
+		//console.log( "TO s.draw " );
 		document.getElementById('txtLog').value = "Scene successfully compiled.";
+		//console.log( "DONE s.draw " );
 	}catch(err){
+		console.log( "FAILED eval " );
 		var vDebug = ""; 
 		for (var prop in err) {  
 		   vDebug += "property: "+ prop+ " value: ["+ err[prop]+ "]\n"; 
@@ -61,8 +71,8 @@ function updateScene(element){
 		//document.getElementById('txtLog').value = vDebug;
 		document.getElementById('txtLog').value = err.message;
 	}
-
-
+	
+	s.draw( root_group );
 	for(let i=0;i<scene_root.length; i++){
 		root_group.add( scene_root[i].toThreeJS( screen.materials.wire ) );
 	}

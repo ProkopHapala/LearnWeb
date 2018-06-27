@@ -67,7 +67,7 @@ function initScene() {
     let nNodes = 30; 
     let nStick = 50;
 
-    let mater = new Material( 10.0, 10.0, 1.0, 1.0 );
+    let mater = new TrussMaterial( 10.0, 10.0, 1.0, 1.0 );
     
     Globals.truss1.makeSolid( Octahedron.verts, Octahedron.edges, 1.0, {S:1.0,mat:mater} );
     

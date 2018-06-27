@@ -10,6 +10,38 @@ Vec3.prototype.yx = function() { return new Vec2(x,y); };
 Vec3.prototype.zx = function() { return new Vec2(x,z); };
 Vec3.prototype.zy = function() { return new Vec2(x,y); };
 
+THREE.toVec3 = function( v ){
+    if( v.isVector3 ){
+        return v;
+    }else{
+        return new Vec3(v[0],v[1],v[2]);
+    }
+}
+
+THREE.Array2Vec3 = function(arr){
+    return new Vec3(arr[0],arr[1],arr[2]);
+}
+
+THREE.Array2Vec3s = function(arr){
+    let arr_ = [];
+    for(let i=0; i<arr.length; i++){
+        arr_.push( THREE.Array2Vec3(arr[i] ) );
+    }
+    return arr_;
+}
+
+THREE.Vec3toArray = function(v){
+    return [v.x,v.y,v.z];
+}
+
+THREE.Vec3toArrays = function(vs){
+    let vs_ = [];
+    for(let i=0; i<vs.length; i++){
+        vs_.push( THREE.Vec3toArray(vs[i]) );
+    }
+    return vs_;
+}
+
 //    inline void add( TYPE f ) { x+=f; y+=f; z+=f; };
 //    inline void mul( TYPE f ) { x*=f; y*=f; z*=f; };
 
@@ -20,15 +52,12 @@ Vec3.prototype.zy = function() { return new Vec2(x,y); };
 //Vec3.prototype.div  = function( v ) { this.x/=v.x; this.y/=v.y; this.z/=v.z; }else{ this.x/=v; this.y/=v; this.z/=v; } };
 
 Vec3.prototype.setf   = function( f       ) { this.x=f;      this.y=f;      this.z=f;      };
-Vec3.prototype.set    = function( x, y, z ) { this.x=x;      this.y=y;      this.z=z;      }; 
+//Vec3.prototype.set    = function( x, y, z ) { this.x=x;      this.y=y;      this.z=z;      }; 
 Vec3.prototype.setv   = function( v       ) { this.x=v.x;    this.y=v.y;    this.z=v.z;    };
 Vec3.prototype.setArr = function( arr     ) { this.x=arr[0]; this.y=arr[1]; this.z=arr[2]; };
 
-
-
-
-Vec3.prototype.mul  = function( v ) { this.x*=v.x; this.y*=v.y; this.z*=v.z; };
-Vec3.prototype.div  = function( v ) { this.x/=v.x; this.y/=v.y; this.z/=v.z; };
+//Vec3.prototype.mul  = function( v ) { this.x*=v.x; this.y*=v.y; this.z*=v.z; };
+//Vec3.prototype.div  = function( v ) { this.x/=v.x; this.y/=v.y; this.z/=v.z; };
 Vec3.prototype.mulf = function( v ) { this.x*=v; this.y*=v; this.z*=v; };
 Vec3.prototype.divf = function( v ) { this.x/=v; this.y/=v; this.z/=v; };
 
@@ -100,7 +129,8 @@ Vec3.prototype.getOrtho = function(){
 }();
 
 Vec3.prototype.getSomeOrtho = function( v1, v2 ){
-    if(x<y){
+    let x=this.x, y=this.y, z=this.z;
+    if(this.x<this.y){
         v1.x =  -y*y -z*z;
         v1.y =  x*y;
         v1.z =  x*z;
@@ -116,9 +146,9 @@ Vec3.prototype.getSomeOrtho = function( v1, v2 ){
 
 Vec3.prototype.rotate_csa = function( ca, sa, uaxis ){
     let cu  = (1-ca)*dot(uaxis);
-    let utx = uaxis.y*z - uaxis.z*y;
-    let uty = uaxis.z*x - uaxis.x*z;
-    let utz = uaxis.x*y - uaxis.y*x;
+    let utx = uaxis.y*this.z - uaxis.z*this.y;
+    let uty = uaxis.z*this.x - uaxis.x*this.z;
+    let utz = uaxis.x*this.y - uaxis.y*this.x;
     let x   = ca*x + sa*utx + cu*uaxis.x;
     let y   = ca*y + sa*uty + cu*uaxis.y;
     this.z  = ca*z + sa*utz + cu*uaxis.z;
@@ -137,7 +167,7 @@ Vec3.prototype.rotate = function(){
 }();
 
 Vec3.prototype.rotateTo = function(){
-    ax = new Vec3(); 
+    var ax = new Vec3(); 
     return function rotateTo( rot0, coef ){
         //rot.add_mul( rot0, coef ); rot.normalize();
         ax.set_cross( this, rot0 );
@@ -236,7 +266,7 @@ Vec3.prototype.fromLinearSolution = function( va, vb, vc, p ){
 Vec3.prototype.average = function( n, vs, out ){
     out.set(0.0);
     for(let i=0; i<n; i++){ out.add(vs[i]); }
-    out.mul( 1/(TYPE)n);
+    out.mul( 1.0/n );
     return out;
 }
 
@@ -250,10 +280,10 @@ Vec3.prototype.average = function( n, selection, vs, out ){
 //template<typename VEC> inline VEC cross( VEC a, VEC b ){ return (VEC){ a.y*b.z-a.z*b.y, a.z*b.x-a.x*b.z, a.x*b.y-a.y*b.x }; }
 //template<typename VEC> inline VEC add  ( VEC a, VEC b ){ return (VEC){ a.x+b.x, a.z+b.z, a.z+b.z }; }
 
-Vec3Zero = new Vec3(0.0, 0.0, 0.0);
-Vec3X    = new Vec3(1.0, 0.0, 0.0);
-Vec3Y    = new Vec3(0.0, 1.0, 0.0);
-Vec3Z    = new Vec3(0.0, 0.0, 1.0);
+var Vec3Zero = new Vec3(0.0, 0.0, 0.0);
+var Vec3X    = new Vec3(1.0, 0.0, 0.0);
+var Vec3Y    = new Vec3(0.0, 1.0, 0.0);
+var Vec3Z    = new Vec3(0.0, 0.0, 1.0);
 
 
 

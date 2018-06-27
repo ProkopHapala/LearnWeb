@@ -1,9 +1,16 @@
 
 "use strict";
 
-
 var Vec3 = THREE.Vector3;
 var tri = THREE.Face3;
+
+
+function printArray( arr ){
+    for(let i=0; i<arr.length; i++){
+        console.log( i, arr[i] );
+    }
+}
+
 
 /*
 function WebGLLineRender(){
@@ -92,10 +99,7 @@ THREE.LinesGeometry =  function ( verts, edges ) {
     // Why : this.addAttribute is not a function
     this.addAttribute( 'position', new THREE.BufferAttribute( coords, 3 ) );
 }
-
 */
-
-
 
 // See : Three.BufferGeometry()
 THREE.makeLinesGeometry =  function ( verts, edges ) {
@@ -107,21 +111,23 @@ THREE.makeLinesGeometry =  function ( verts, edges ) {
     if( edges ){
         nVert = edges.length*2;
         coords = new Float32Array( nVert * 3 );
-        for( let i=0;i<edges.lenght; i++ ){
+        for( let i=0;i<edges.length; i++ ){
             let edge = edges[i];
             let i6=i*6;
             let p;
             //let p = verts[ edge.a ];
-            p = verts[ edge[0] ];
-            coords[i3  ] = p.x;
-            coords[i3+1] = p.y;
-            coords[i3+2] = p.z;
+            //console.log( "i: ", i, i6 );
+            p = verts[ edge[0] ];   //console.log( "p1 ", p );
+            coords[i6  ] = p.x;
+            coords[i6+1] = p.y;
+            coords[i6+2] = p.z;
             //let p = verts[ edges.b ];
-            p = verts[ [1] ];
+            p = verts[ edge[1] ];  //console.log( "p2 ", p );
             coords[i6+3] = p.x;
             coords[i6+4] = p.y;
             coords[i6+5] = p.z;
         }
+        //console.log( coords );
     }else{
         nVert = verts.length;
         coords = new Float32Array( nVert * 3 );
@@ -138,9 +144,6 @@ THREE.makeLinesGeometry =  function ( verts, edges ) {
     geom.addAttribute( 'position', new THREE.BufferAttribute( coords, 3 ) );
     return geom;
 }
-
-
-
 
 
 function trapezGeom( x0, y0, x1, y1, sym ){

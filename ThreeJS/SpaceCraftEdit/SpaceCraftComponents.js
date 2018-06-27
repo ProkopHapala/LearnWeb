@@ -35,7 +35,6 @@ var defaultCatalog = new Catalog( ["default",] );
 class CatalogItem{
     constructor(name,id,kind){
         this.name = name;
-        //this.id   = id;
         if(kind){
             this.kind = kind;
         }else{
@@ -52,6 +51,7 @@ class CatalogItem{
 
 // === SpaceShip
 
+/*
 class SpaceCraft extends Catalog {
     constructor(name){
         super();
@@ -71,9 +71,10 @@ class SpaceCraft extends Catalog {
         this.pipes=[];
     }
 }
+*/
 
-var defaultShip = new SpaceCraft();
-
+//var defaultShip = new SpaceCraft();
+var defaultShip;
 
 class Material extends CatalogItem {
     constructor(name,density,Spull,Spush,Kpull,Kpush,reflectivity,Tmelt,   catalog=defaultCatalog,kind="Material"){
@@ -121,7 +122,7 @@ class FuelType extends Commodity {
 
 class Node{
     constructor(pos){
-        this.pos=pos;
+        this.pos=THREE.toVec3( pos );
         this.components=[];
     }
 };
@@ -144,8 +145,8 @@ class ShipComponent extends CatalogItem {
 class Modul extends ShipComponent {
     constructor(name,pos,rot,span, ship=defaultShip,kind="Modul"  ){
         super(name,ship,kind);
-        this.pose=new BodyPose(pos,rot); // TODO - rot just up:vec3
-        this.span=span;
+        this.pose=new BodyPose(THREE.toVec3(pos),rot); // TODO - rot just up:vec3
+        this.span=THREE.toVec3(span);
         this.volume=0.0;
     }
 };
@@ -168,9 +169,10 @@ class NodeLinker extends ShipComponent {
 };
 
 class Girder extends NodeLinker { 
-    constructor(name,node1,node2, nseg, mseg, w,h,material,    ship=defaultShip,kind="Girder" ){
+    constructor(name, node1, node2, up, nseg, mseg, w,h,material,    ship=defaultShip,kind="Girder" ){
         //NodeLinker(node1,node2);
         super(name,node1,node2,ship,kind);
+        this.up = up;
         this.nseg=nseg;
         this.mseg=mseg;
         this.width=w;
@@ -193,7 +195,7 @@ class Ring extends NodeLinker {
         this.width=w;
         this.height=h;
         this.material=material;
-        this.material;
+        //this.material;
         // this.trussPoitRange; // index of start and end in Truss
         // this.trussStickRange; // --,,---
     }
@@ -228,8 +230,8 @@ class Plate extends ShipComponent {
         super(name,ship,kind);
         this.girder1=g1;
         this.girder2=g2;
-        this.g1span = new vec2(0.0,1.0); 
-        this.g2span = new vec2(0.0,1.0);
+        this.g1span = new Vec2(0.0,1.0); 
+        this.g2span = new Vec2(0.0,1.0);
         this.area=0.0;
         //Vec3d normal;
         //int ntris;
@@ -266,9 +268,9 @@ class ThrusterType extends CatalogItem {
 */
 
 class Thruster extends Modul {
-    constructor(name,thrust,power,consumption,type,  ship=defaultShip,kind="Pipe" ){
-        super(name,pos,  ship,kind);
-        if(type instanceof(string)){
+    constructor(name,pos,rot,span, thrust,power,consumption,type,  ship=defaultShip,kind="Pipe" ){
+        super(name,pos,rot,span,  ship,kind);
+        if(type instanceof(String)){
             this.type = defaultThrusterTypes[type];
         }else{
             this.type = type;
@@ -324,7 +326,6 @@ class Accelerator extends ShipComponent{
     }
 };
 
-
 class Gun extends Accelerator{
     constructor( name,     suppType,suppId,suppSpan,   PowerPeak,PulseEnergy,PulseDuration,PulsePerios,   aperture,divergence,          ship=defaultShip,kind=this.constructor.name){
         this.type = null;
@@ -335,3 +336,175 @@ class Gun extends Accelerator{
     }
 };
 
+class SpaceCraft {
+    constructor(){
+        this.LODs  = [];
+        this.truss = new Truss();
+        this.nodes     = [];
+        this.ropes     = [];
+        this.girders   = [];
+        this.rings     = [];
+        this.thrusters = [];
+        this.guns      = [];
+        this.radiators = [];
+        this.shields   = [];
+        this.tanks     = [];
+        this.pipes     = [];
+    }
+
+    node(pos){
+        let o = new Node(pos);
+        o.id = this.nodes.length;
+        this.nodes.push(o);
+        return o;
+        //return this.nodes.length - 1;
+    }
+
+    girder(nd1,nd2,up,nseg,mseg,wh,mat){
+        // constructor(name, node1, node2, up, nseg, mseg, w,h, material,    ship=defaultShip,kind="Girder" ){
+        let name="girder_"+this.girders.length;
+        let o = new Girder( name, nd1, nd2, up, nseg, mseg, wh[0], wh[1] );
+        o.id = this.girders.length;
+        this.girders.push(o);
+        return o;
+        //return this.girders.length - 1;
+    }
+
+    rope( nd1, nd2, thick, mat ){
+        let name="rope_"+this.ropes.length;
+        let o = new Rope( name, nd1, nd2, thick, mat );
+        o.id = this.ropes.length;
+        this.ropes.push(o);
+        return o;
+        //return this.ropes.length - 1;
+    }
+
+    ring(){
+        let o = new Ring();
+        o.id = this.rings.length;
+        this.rings.push(o);
+        return o;
+        //return this.rings.length - 1;
+    }
+
+    radiator(){
+        let o = new Radiator();
+        o.id = this.radiators.length;
+        this.radiators.push(o);
+        return o;
+        //return this.radiators.length - 1;
+    }
+
+    shield(){
+        let o = new Shield();
+        o.id = this.shields.length;
+        this.shields.push(o);
+        return o;
+        //return this.shields.length - 1;
+    }
+
+    thruster( pos, ax, span, kind ){
+        // constructor(name,pos,rot,span, thrust,power,consumption,type,  ship=defaultShip,kind="Pipe" ){
+        console.log( " thruster ", pos, ax, span,   0.0,0.0,0.0, kind );
+        ax = THREE.toVec3(ax);
+
+        let rot = new Mat3();
+        rot.c.setv( ax );
+        rot.c.getSomeOrtho( rot.a, rot.b);
+
+        let name="thruster_"+this.thrusters.length;
+        let o = new Thruster(name,pos,rot,span);
+        o.id = this.thrusters.length;
+        this.thrusters.push(o);
+        return o;
+        //return this.thrusters.length - 1;
+    }
+
+    tank(){
+        let o = new Tank();
+        o.id = this.tanks.length;
+        this.tanks.push(o);
+        return o;
+        //return this.tanks.length - 1;
+    }
+
+    tankRing( n, aOff, R, r, L, z0 ){
+        for (let i=0; i<n; i++ ){
+            let a = (i/n + aOff)*2*Math.pi 
+            this.tank( new Vec3( Math.cos(a)*R,Math.sin(a)*R,z0 ), zvec, new Vec3( r,r,L ), "H2");
+        }
+    }
+
+    girderFan( n, aOff, w, h, z0,z1,   nseg, thick, shielded ){
+        let tipNode = new Node( new Vec3(0.0,0.0,z1) );
+        let a = aOff*2*Math.pi 
+        let gd0  = new Girder( tipNode, this.node( new Vec3( Math.cos(a)*w, Math.sin(a)*h, z0) ), xvec, nseg, 2, [thick,thick], "steel")
+        let ogd  = gd0;
+        for (let i=0; i<n; i++ ){
+            let gd=gd0
+            if( i<n ) {
+                let a = (i/n + aOff)*2*Math.pi
+                gd = new Girder( tipNode, this.node( new Vec3( Math.cos(a)*w, Math.sin(a)*h, z0) ), xvec, nseg, 2, [thick,thick],  "steel" )
+            }
+            if (shielded){ this.shield( ogd,0.0,1.0, gd,0.0,1.0 ) }
+            ogd = gd;
+        }
+    }
+
+    clear(){
+        this.truss.clear();
+        this.nodes     = [];
+        this.ropes     = [];
+        this.girders   = [];
+        this.rings     = [];
+        this.thrusters = [];
+        this.guns      = [];
+        this.radiators = [];
+        this.shields   = [];
+        this.tanks     = [];
+        this.pipes     = [];
+    }
+
+};
+
+
+defaultShip = new SpaceCraft();
+
+var origin = [0.0,0.0,0.0];
+var xvec   = [1.0,0.0,0.0];
+var yvec   = [0.0,1.0,0.0];
+var zvec   = [0.0,0.0,1.0];
+
+/*
+Material{ name="Kevlar", density=1.44e+3, Spull=3.6e+9, Spush=0.0, Kpull=154.0e+9, Kpush=0.0, reflectivity=0.6,  Tmelt=350 }
+Material{ name="Steel" , density=7.89e+3, Spull=1.2e+9, Spush=0.0, Kpull=200.0e+9, Kpush=0.0, reflectivity=0.85, Tmelt=800 }
+--Material{ name="Titanium" , density=7.89e+3, Spull=3.6e+9, Spush=0.0, Kpull=154.0e+9, Kpush=0.0, reflectivity=0.7, Tmelt=450 }
+
+origin = {0.0,0.0,0.0}
+xvec   = {1.0,0.0,0.0}
+yvec   = {0.0,1.0,0.0}
+zvec   = {0.0,0.0,1.0}
+
+function tanks( n,aOff, R, r, L, z0 )
+    for i=1,n do
+        local a = (i/n + aOff)*2*math.pi 
+        Tank( {math.cos(a)*R,math.sin(a)*R,z0}, zvec, {r,r,L}, "H2")
+    end
+end
+
+function girderFan( n, aOff, w, h, z0,z1,   nseg, thick, shielded )
+    local tipNode = Node({0.0,0.0,z1});
+    local a = aOff*2*math.pi 
+    local gd0  = Girder( tipNode, Node({math.cos(a)*w,math.sin(a)*h,z0}), xvec, nseg, 2, {thick,thick}, "steel")
+    local ogd  = gd0;
+    for i=1,n do
+        local gd=gd0
+        if i<n then
+            local a = (i/n + aOff)*2*math.pi
+            gd = Girder( tipNode, Node({math.cos(a)*w,math.sin(a)*h,z0}), xvec, nseg, 2, {thick,thick},  "steel" )
+        end
+        if shielded then Shield( ogd,0.0,1.0, gd,0.0,1.0 ) end
+        ogd = gd;
+    end
+end
+*/

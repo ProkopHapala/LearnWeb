@@ -1,20 +1,9 @@
 "use strict";
 
-require(THREE);
+var Vec2 = THREE.Vector2;
+var Vec3 = THREE.Vector3;
 
-function trapezGeom( x0, y0, x1, y1, sym ){
-    var geom = new THREE.Geometry(); 
-    var y00=0.0,y10=0.0;
-    if( sym ){ y00=-y0; y10=-y1; };
-    geom.vertices.push(new THREE.Vector3(y00,x0,0));
-    geom.vertices.push(new THREE.Vector3(y0 ,x0,0));
-    geom.vertices.push(new THREE.Vector3(y10,x1,0));
-    geom.vertices.push(new THREE.Vector3(y1 ,x1,0));
-    geom.faces.push( new THREE.Face3( 0, 1, 2 ) );
-    geom.faces.push( new THREE.Face3( 1, 2, 3 ) );
-    geom.computeFaceNormals();
-    return geom;
-}
+//require(THREE);
 
 /*
 THREE.getUVFuncNormal = ( function ( uv, eps,  func ){
@@ -73,54 +62,90 @@ THREE.drawSmoothUVFunc = function ( nx, ny, UVmin, UVmax, voff, func ){
 }
 */
 
-THREE.drawWireUVFunc = ( function ( na,nb, UVmin, VUVmax, voff, func ){
-
+THREE.drawWireUVFunc = function ( ){
     var eps = 0.001;
-    var duv = UVmax-UVmin; duv.mul( {na,nb} );
+    //var duv = UVmax-UVmin; 
+    //duv.mul( {na,nb} );
     //int i0=mesh.vpos.size()/3;
-    var uv;
-
-    return function drawWireUVFunc( Vec2i n, Vec2f UVmin, Vec2f UVmax, float voff, UVfunc func ){
-    for(int ia=0;ia<=n.a;ia++){
-        // strips
-        glBegin(GL_LINE_LOOP);
-        for(int ib=0;ib<=n.b;ib++){
-            uv.a = UVmin.a+duv.a*ia;
-            uv.b = UVmin.b+duv.b*ib +  voff*duv.b*ia;
-            Vec3f p;
-            p  = func(uv);
-            glVertex3f(p.x,p.y,p.z);
-
-        }
-        glEnd();
-
-        //
-        if(ia<n.a){
-            glBegin(GL_LINE_LOOP);
-            for(int ib=0;ib<=n.b;ib++){
-                uv.a = UVmin.a+duv.a*ia;
-                uv.b = UVmin.b+duv.b*ib + voff*duv.b*ia;
-                Vec3f p;
-
-                p  = func(uv);
-                glVertex3f(p.x,p.y,p.z);
-
-                uv.a += duv.a;
-                uv.b += voff*duv.b;
-
-                p  = func(uv);
-                glVertex3f(p.x,p.y,p.z);
-
+    var duv = new Vec2();
+    var uv = new Vec2();
+    var p  = new Vec3();
+    return function drawWireUVFunc( ns, UVmin, UVmax, voff, func, args ){
+        let verts = [];
+        duv.set_sub( UVmin, UVmax );
+        duv.x *= 1/ns[0];
+        duv.y *= 1/ns[1];
+        //console.log( "uv duv ns voff ",  uv, duv, ns, voff );
+        for(let ix=0; ix<ns[0]; ix++ ){
+            // strips
+            //glBegin(GL_LINE_LOOP);
+            let p0;
+            for(let iy=0; iy<=ns[1]; iy++ ){
+                uv.x = UVmin.x+duv.x*ix;
+                uv.y = UVmin.y+duv.y*iy +  voff*duv.y*ix;
+                func( uv, p, args );
+                //console.log( ix,iy,   uv, p  );
+                //glVertex3f(p.x,p.y,p.z);
+                if(iy>0)    { verts.push( p.clone() ); }else{ p0 = p.clone(); }
+                if(iy<ns[1]){ verts.push( p.clone() ); }else{ verts.push( p0.clone ); }
             }
-            glEnd();
+            //console.log( verts.length );
+            //glEnd();
+
+            if(ix<ns[0]-1){
+                //glBegin(GL_LINE_LOOP);
+                for(let iy=0; iy<=ns[1]; iy++){
+                    uv.x = UVmin.x+duv.x*ix;
+                    uv.y = UVmin.y+duv.y*iy + voff*duv.y*ix;
+
+                    func(uv,p, args);
+                    //glVertex3f(p.x,p.y,p.z);
+                    verts.push( p.clone() );
+
+                    uv.x += duv.x;
+                    uv.y += voff*duv.y;
+
+                    func(uv,p,args);
+                    //glVertex3f(p.x,p.y,p.z);
+                    verts.push( p.clone() );
+
+                }
+                //glEnd();
+            }
+            
         }
+        return verts;
     }
-}
+}();
 
 // ==================== func
 
+THREE.ParabolaUVfunc = function  ( uv, p, args ){
+    //Vec2f csb; csb.fromAngle(p.b);
+    let cb = Math.cos(uv.y);
+    let sb = Math.sin(uv.y);
+    let r = uv.x;
+    let l = uv.x * uv.x * args.K;
+    p.x = cb*r;
+    p.y = sb*r;
+    p.z = l;
+    //return (Vec3f){csb.a*r,csb.b*r,l };
+}
+
+THREE.drawUV_Parabola  = function( n, UVmin, UVmax, R, L, voff ){
+    let K = L/(R*R);
+    UVmin.x*=R; UVmax.x*=R;
+    return THREE.drawWireUVFunc( n, UVmin, UVmax, voff, THREE.ParabolaUVfunc, {K:K} );
+    //printf( "drawUV_Parabola: R %f L %f K %f \n", R, L, K  );
+    //auto uvfunc = [&](Vec2f uv){return ParabolaUVfunc(uv,K);};
+    //if(wire){ drawWireUVFunc( n, UVmin, UVmax,voff, uvfunc ); }
+    //else    { drawSmoothUVFunc( n, UVmin, UVmax,voff, uvfunc ); }
+}
+
+/*
 THREE.ConeUVfunc  = function ( p, R1, R2, L ){
-    Vec2f csb; csb.fromAngle(p.b);
+    Vec2f 
+    csb; csb.fromAngle(p.b);
     float R = (1-p.a)*R1 + p.a*R2;
     return (Vec3f){csb.a*R,csb.b*R,L*p.a };
 }
@@ -217,4 +242,4 @@ THREE.drawUV_Hyperbola = function( n, UVmin, UVmax, r, R, L, voff, wire ){
         if(wire){ drawWireUVFunc( n, UVmin, UVmax,voff, uvfunc ); }
         else    { drawSmoothUVFunc( n, UVmin, UVmax,voff, uvfunc ); }
     }
-}
+    */
