@@ -152,8 +152,8 @@ class Modul extends ShipComponent {
 };
 
 class Tank extends Modul {
-    constructor(name,comodity,      ship=defaultShip,kind="Modul"){
-        super(name,ship,kind);
+    constructor(name,pos,rot,span,comodity,      ship=defaultShip,kind="Tanks"){
+        super(name,pos,rot,span,  ship,kind);
         this.comodity=comodity;
         this.filled=0.0;
     }
@@ -226,7 +226,7 @@ class Pipe extends ShipComponent {
 // ==== Motors
 
 class Plate extends ShipComponent {
-    constructor(name,g1,g2,   ship=defaultShip,kind="Pipe" ){
+    constructor(name,g1,g2,   ship=defaultShip,kind="Plate" ){
         super(name,ship,kind);
         this.girder1=g1;
         this.girder2=g2;
@@ -240,16 +240,22 @@ class Plate extends ShipComponent {
 };
 
 class Radiator extends Plate{
-    constructor(name,g1,g2,temperature,    ship=defaultShip,kind="Pipe" ){
+    constructor(name,g1,g2,temperature,    ship=defaultShip,kind="Radiator" ){
         super(name,g1,g2,ship,kind);
         this.temperature=temperature;
     }
 };
 
 class Shield extends Plate{
+    constructor(name,g1,g2,   ship=defaultShip,kind="Shield" ){
+        super(name,g1,g2,   ship=defaultShip,kind="Shield" );
+    }
 };
 
 class Collector extends Plate{
+    constructor(name,g1,g2,   ship=defaultShip,kind="Collector" ){
+        super(name,g1,g2,   ship=defaultShip,kind="Collector" );
+    }
 };
 
 // ==== Motors
@@ -387,8 +393,12 @@ class SpaceCraft {
         //return this.rings.length - 1;
     }
 
-    radiator(){
-        let o = new Radiator();
+    radiator( g1, g1span, g2, g2span, T ){
+        // s.radiator( g6,0.15,0.8, g7,0.02,0.8, 1280.0 )
+        let name="radiator_"+this.radiators.length;
+        let o = new Radiator(name, g1, g2, T );
+        o.g1span.setArr(g1span);
+        o.g2span.setArr(g2span);
         o.id = this.radiators.length;
         this.radiators.push(o);
         return o;
@@ -403,25 +413,32 @@ class SpaceCraft {
         //return this.shields.length - 1;
     }
 
-    thruster( pos, ax, span, kind ){
+    thruster( pos, ax, span, type ){
         // constructor(name,pos,rot,span, thrust,power,consumption,type,  ship=defaultShip,kind="Pipe" ){
-        console.log( " thruster ", pos, ax, span,   0.0,0.0,0.0, kind );
+        //console.log( " thruster ", pos, ax, span,  type );
         ax = THREE.toVec3(ax);
-
         let rot = new Mat3();
         rot.c.setv( ax );
         rot.c.getSomeOrtho( rot.a, rot.b);
 
         let name="thruster_"+this.thrusters.length;
-        let o = new Thruster(name,pos,rot,span);
+        let o = new Thruster(name, pos, rot, span, 0.0, 0.0, 0.0, type );
         o.id = this.thrusters.length;
         this.thrusters.push(o);
         return o;
         //return this.thrusters.length - 1;
     }
 
-    tank(){
-        let o = new Tank();
+    tank( pos, ax, span, commodity ){
+        // constructor(name,pos,rot,span,comodity,      ship=defaultShip,kind="Modul"){
+        // this.tank( new Vec3( Math.cos(a)*R,Math.sin(a)*R,z0 ), zvec, new Vec3( r,r,L ), "H2");
+        console.log( " tank ", pos, ax, span, commodity );
+        ax = THREE.toVec3(ax);
+        let rot = new Mat3();
+        rot.c.setv( ax );
+        rot.c.getSomeOrtho( rot.a, rot.b);
+
+        let o = new Tank( name,pos,rot,span,commodity );
         o.id = this.tanks.length;
         this.tanks.push(o);
         return o;

@@ -78,14 +78,14 @@ Vec3.prototype.sub_mul = function( a, b ){ this.x-=a.x*b.x;  this.y-=a.y*b.y; th
 
 Vec3.prototype.set_add_mul = function( a, b, f ){ this.x= a.x + f*b.x;     this.y= a.y + f*b.y;     this.z= a.z + f*b.z;  };
 
-Vec3.prototype.set_lincomb = function( fa, a, fb, b ){ this.x = fa*a.x + fb*b.x;  this.y = fa*a.y + fb*b.y;  this.z = fa*a.z + fb*b.z; };
-Vec3.prototype.add_lincomb = function( fa, a, fb, b ){ this.x+= fa*a.x + fb*b.x;  this.y+= fa*a.y + fb*b.y;  this.z+= fa*a.z + fb*b.z; };
+Vec3.prototype.set_lincomb2f = function( fa, a, fb, b ){ this.x = fa*a.x + fb*b.x;  this.y = fa*a.y + fb*b.y;  this.z = fa*a.z + fb*b.z; };
+Vec3.prototype.add_lincomb2f = function( fa, a, fb, b ){ this.x+= fa*a.x + fb*b.x;  this.y+= fa*a.y + fb*b.y;  this.z+= fa*a.z + fb*b.z; };
 
-Vec3.prototype.set_lincomb = function( fa, fb, fc, a, b, c ){ this.x = fa*a.x + fb*b.x + fc*c.x;  this.y = fa*a.y + fb*b.y + fc*c.y;  this.z = fa*a.z + fb*b.z + fc*c.z; };
-Vec3.prototype.add_lincomb = function( fa, fb, fc, a, b, c ){ this.x+= fa*a.x + fb*b.x + fc*c.x;  this.y+= fa*a.y + fb*b.y + fc*c.y;  this.z+= fa*a.z + fb*b.z + fc*c.z; };
+Vec3.prototype.set_lincomb3f = function( fa, fb, fc, a, b, c ){ this.x = fa*a.x + fb*b.x + fc*c.x;  this.y = fa*a.y + fb*b.y + fc*c.y;  this.z = fa*a.z + fb*b.z + fc*c.z; };
+Vec3.prototype.add_lincomb3f = function( fa, fb, fc, a, b, c ){ this.x+= fa*a.x + fb*b.x + fc*c.x;  this.y+= fa*a.y + fb*b.y + fc*c.y;  this.z+= fa*a.z + fb*b.z + fc*c.z; };
 
-Vec3.prototype.set_lincomb = function( fs, a, b, c ){ this.x = fs.a*a.x + fs.b*b.x + fs.c*c.x;  this.y = fs.a*a.y + fs.b*b.y + fs.c*c.y;  this.z = fs.a*a.z + fs.b*b.z + fs.c*c.z; };
-Vec3.prototype.add_lincomb = function( fs, a, b, c ){ this.x+= fs.a*a.x + fs.b*b.x + fs.c*c.x;  this.y+= fs.a*a.y + fs.b*b.y + fs.c*c.y;  this.z+= fs.a*a.z + fs.b*b.z + fs.c*c.z; };
+Vec3.prototype.set_lincombv = function( fs, a, b, c ){ this.x = fs.a*a.x + fs.b*b.x + fs.c*c.x;  this.y = fs.a*a.y + fs.b*b.y + fs.c*c.y;  this.z = fs.a*a.z + fs.b*b.z + fs.c*c.z; };
+Vec3.prototype.add_lincombv = function( fs, a, b, c ){ this.x+= fs.a*a.x + fs.b*b.x + fs.c*c.x;  this.y+= fs.a*a.y + fs.b*b.y + fs.c*c.y;  this.z+= fs.a*a.z + fs.b*b.z + fs.c*c.z; };
 
 
 Vec3.prototype.set_cross = function( a, b ){ this.x =a.y*b.z-a.z*b.y; this.y =a.z*b.x-a.x*b.z; this.z =a.x*b.y-a.y*b.x; };
@@ -104,6 +104,15 @@ Vec3.prototype.makeOrtho  = function( a ){ let c = this.dot(a)/a.norm(); this.ad
 //inline TYPE dot  ( a ) const { return x*a.x + y*a.y + z*a.z;  };
 Vec3.prototype.norm2 = function( ){ return this.x*this.x + this.y*this.y + this.z*this.z;        };
 Vec3.prototype.norm = function( ){ return Math.sqrt( this.norm2() ); };
+
+
+Vec3.prototype.normalize_r = function() {
+    let norm  = this.norm();
+    let inVnorm = 1.0/norm;
+    this.x *= inVnorm;    this.y *= inVnorm;    this.z *= inVnorm;
+    return norm;
+}
+
 /*
 Vec3.prototype.normalize = function() {
     let norm  = this.norm();

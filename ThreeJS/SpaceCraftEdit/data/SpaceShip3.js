@@ -38,31 +38,31 @@ s.rope(n1,n4, 25, "Kevlar");
 s.rope(n2,n3, 25, "Kevlar");
 s.rope(n2,n4, 25, "Kevlar");
 
+//s.tank( [100.0,200.0,300.0], zvec, [16.0,16.0,50.0], "H2");
+
+s.tank( [1.0,2.0,3.0], zvec, [16.0,16.0,50.0], "H2");
+
 /*
 s.tankRing( 6,0.0, 10.0, 5.0, -50.0, -20.0 )
 s.girderFan( 4, 0.0, 20.0, 40.0,-50.0, -250, 10, 1.0, true )
 s.girderFan( 4, 0.0, 20.0, 40.0, 20.0,  300, 10, 1.0, true )
-
 s.girderFan( 8, 0.0, 80.0, 80.0, -380, -200, 10, 1.0, false )
+*/
 
 // = radiatorType = {"LithiumHeatPipe", 1280.0 }
 
 //radiator( g5,0.2,0.8, g1,0.2,0.8, 1280.0 )
-s.radiator( g6,0.15,0.8, g7,0.02,0.8, 1280.0 )
-s.radiator( g6,0.15,0.8, g8,0.02,0.8, 1280.0 )
+s.radiator( g6, [0.15,0.8], g7, [0.02,0.8], 1280.0 )
+//s.radiator( g6, [0.15,0.8], g8, [0.02,0.8], 1280.0 )
 
 //      node1,2, up,  nseg    R     {width,height}
-s.ring( [0.0,0.0,4.0], zvec, xvec, 16, 100.0, [4.0,4.0], "Steel" )
-s.ring( [20.0,0.0,0.0], xvec, yvec, 16, 108.0,[4.0,4.0], "Steel" )
-// Ring( {0.0,0.0,0.0}, yvec, xvec, 16, 160.0, {8.0,5.0}, "Steel" )
+//s.ring( [0.0,0.0,4.0], zvec, xvec, 16, 100.0, [4.0,4.0], "Steel" )
+//s.ring( [20.0,0.0,0.0], xvec, yvec, 16, 108.0,[4.0,4.0], "Steel" )
 
 //  There should be mechanism how to generate nodes on-top of ship components (anchor points)
 
+//s.gun( g6, 0.1, 0.8, "XFEL" )
 
-
-s.gun( g6, 0.1, 0.8, "XFEL" )
-
-*/
 
 s.thruster( [0.0,0.0,-300.0], zvec, [5.0,100.0,120.0], "ICF_Ebeam_magNozzle" );
 // Thruster( {-16,-16,16}, {1.0,2.0,3.0}, {5.0,100.0,50.0}, "ICF_Ebeam_magNozzle" )

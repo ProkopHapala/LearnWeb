@@ -5,7 +5,7 @@ var Vec2 = THREE.Vector2;
 
 Vec2.prototype.setf   = function( f     ) { this.x=f;      this.y=f;   };
 Vec2.prototype.set2f  = function( x, y  ) { this.x=fx;     this.y=fy;  };
-//Vec2.prototype.set    = function( v     ) { this.x=v.x;    this.y=v.y; };
+Vec2.prototype.setv   = function( v     ) { this.x=v.x;    this.y=v.y; };
 Vec2.prototype.setArr = function( arr   ) { this.x=arr[0]; this.y=arr[1]; };
 
 Vec2.prototype.addf = function( f ) { this.x+=f; this.y+=f; };
@@ -74,7 +74,7 @@ Vec2.prototype.set_mul_cmplx  = function( a, b ){                        let x_ 
 Vec2.prototype.set_udiv_cmplx = function( a, b ){                        let x_ =  a.x*b.x + a.y*b.y;       this.y =  a.y*b.x - a.x*b.y;       this.x=x_;  }
 Vec2.prototype.set_div_cmplx  = function( a, b ){ let ir2 = 1/b.norm2(); let x_ = (a.x*b.x + a.y*b.y)*ir2;  this.y = (a.y*b.x - a.x*b.y)*ir2;  this.x=x_;  }
 
-Vec2.prototype.fromAngle         = function( phi ){	this.x = Math.cos( phi );	this.y = Math.sin( phi );	    }
+Vec2.prototype.fromAngle         = function( phi ){ this.x = Math.cos( phi );	this.y = Math.sin( phi );	    }
 Vec2.prototype.fromAngle_taylor2 = function( phi ){	Math.sincos_taylor2( phi, this.y, this.x );	}
 Vec2.prototype.fromCos           = function( ca  ){ this.x=ca; this.y=Math.sqrt(1-ca*ca); }
 Vec2.prototype.fromSin           = function( sa  ){ this.y=sa; this.x=Math.sqrt(1-sa*sa); }

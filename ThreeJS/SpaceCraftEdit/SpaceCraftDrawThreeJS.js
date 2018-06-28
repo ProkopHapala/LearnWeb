@@ -60,7 +60,7 @@ SpaceCraft.prototype.draw = function( group ){
 	// truss.makeGirder_1( vec3.fromValues(0.0,0.0,0.0), vec3.fromValues(1000.0,5.0,0.0), vec3.fromValues(0.0,1.0,0.0), 6, 20.0, kind_long, kind_perp, kind_zigIn, kind_zigOut );
 	
 	console.log( "SpaceCraft.draw ", this.girders.length );
-	
+
 	for(let o of this.nodes){
 		//console.log( "node : ", o.id, o);
 		this.truss.nodes.push( new TrussNode( this.truss.nodes.length, THREE.Vec3toArray( o.pos ), 0.0 ) );
@@ -70,8 +70,8 @@ SpaceCraft.prototype.draw = function( group ){
 		this.truss.sticks.push( new Stick( o.node1.id ,o.node2.id, mater ) );
 	}
 	//console.log("this.truss.sticks ", this.truss.sticks );
-	printArray( this.truss.nodes  );
-	printArray( this.truss.sticks );
+	//printArray( this.truss.nodes  );
+	//printArray( this.truss.sticks );
 	
 	for(let o of this.girders){
 	//for(let i=0; i<this.girders.length; i++ ){
@@ -96,9 +96,9 @@ SpaceCraft.prototype.draw = function( group ){
 	group.add(mesh);
 	
 
-	console.log(this.thrusters);
+	//console.log(this.thrusters);
 	for(let o of this.thrusters){
-		console.log( "thrusters ", o, o.span, o.pose.pos );
+		//console.log( "thrusters ", o, o.span, o.pose.pos );
 		let verts =  THREE.drawUV_Parabola( [16,16], new Vec2(0.05,0.0), new Vec2(1.0,6.28), o.span.y, -o.span.z, 0.5 );
 		//printArray(verts);
 		let geom = THREE.makeLinesGeometry( verts );
@@ -108,5 +108,52 @@ SpaceCraft.prototype.draw = function( group ){
 		// ToDo: rotation
 		group.add(mesh);
 	}
+
+
+	let p0 = new Vec3();
+	let p1 = new Vec3();
+	for(let o of this.tanks){
+		console.log( "tank ", o);
+		console.log( "tank ", o.span, o.pose.pos, o.pose.rot.a, o.pose.rot.b, o.pose.rot.c );
+		p0.setv(o.pose.pos);
+		console.log( "o.pose.pos, o.span.z, o.pose.rot.c ", o.pose.pos, o.span.z, o.pose.rot.c);
+		p1.set_lincomb2f( 1, o.pose.pos, o.span.z, o.pose.rot.c );
+		console.log( "tank p0 p1 ", p0, p1 );
+		let geom = THREE.capsula( p0, p1, o.span.x, o.span.y, Math.PI*0.5, Math.PI*0.5, Math.PI*0.1, 16, true );
+		//let mat  = new THREE.LineBasicMaterial( { color:  0x808080 } );
+		//let mesh = new THREE.Line( geom, mat );
+		let mat = new THREE.MeshPhongMaterial( { side: THREE.DoubleSide } );  
+		let mesh = new THREE.Mesh( geom, mat );
+		//mesh.position.setv( o.pose.pos );
+		// ToDo: rotation
+		group.add(mesh);
+	}
+
+	geom = new THREE.Geometry(); 
+	let p = new Vec3();
+	for(let o of this.radiators){
+		console.log( "radiator ", o);
+		//console.log( "tank ", o.span, o.pose.pos, o.pose.rot.a, o.pose.rot.b, o.pose.rot.c );
+		let iv = geom.vertices.length;
+		//console.log( "g1", o.girder1, o.girder1.node1 );
+		//console.log( "g2", o.girder2, o.girder2.node2 );
+		//geom.vertices.push( o.girder1.node1.pos.clone() );
+		//geom.vertices.push( o.girder1.node2.pos.clone() );
+		//geom.vertices.push( o.girder2.node2.pos.clone() );
+		//geom.vertices.push( o.girder2.node1.pos.clone() );
+		//console.log( "o.g1span, o.g2span ", o.g1span, o.g2span );
+		p.set_lincomb2f( 1-o.g1span.x, o.girder1.node1.pos, o.g1span.x,  o.girder1.node2.pos );  geom.vertices.push( p.clone() );
+		p.set_lincomb2f( 1-o.g1span.y, o.girder1.node1.pos, o.g1span.y,  o.girder1.node2.pos );  geom.vertices.push( p.clone() );
+		p.set_lincomb2f( 1-o.g2span.x, o.girder2.node1.pos, o.g2span.x,  o.girder2.node2.pos );  geom.vertices.push( p.clone() );
+		p.set_lincomb2f( 1-o.g2span.y, o.girder2.node1.pos, o.g2span.y,  o.girder2.node2.pos );  geom.vertices.push( p.clone() );
+		geom.faces.push( new THREE.Face3( iv, iv+1, iv+2   ) );
+		geom.faces.push( new THREE.Face3( iv+1, iv+2, iv+3 ) );
+	}
+	printArray( geom.vertices );
+	printArray( geom.faces );
+	geom.computeFaceNormals();
+	mat  = new THREE.MeshPhongMaterial( { side: THREE.DoubleSide } );  
+	mesh = new THREE.Mesh( geom, mat );
+	group.add(mesh);
 
 } 
