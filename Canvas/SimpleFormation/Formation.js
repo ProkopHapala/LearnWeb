@@ -15,7 +15,7 @@ goal is to make simplest possible representation of formation battle
 
 var Formation = function( name, pos ){
     this.name  = name;
-    this.tyoe  = type;
+    this.type  = type;
     this.stance = ; // loose, hold ground, push, run, retreat, flee ....  
     this.pos   = 
     this.dir   =

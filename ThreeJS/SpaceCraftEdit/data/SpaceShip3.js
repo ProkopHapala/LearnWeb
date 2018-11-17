@@ -51,9 +51,9 @@ s.girderFan( 8, 0.0, 80.0, 80.0, -380, -200, 10, 1.0, false )
 
 // = radiatorType = {"LithiumHeatPipe", 1280.0 }
 
-//radiator( g5,0.2,0.8, g1,0.2,0.8, 1280.0 )
+//s.radiator( g5, [0.2,0.8],  g1, [0.2,0.8],  1280.0 )
 s.radiator( g6, [0.15,0.8], g7, [0.02,0.8], 1280.0 )
-//s.radiator( g6, [0.15,0.8], g8, [0.02,0.8], 1280.0 )
+s.radiator( g6, [0.15,0.8], g8, [0.02,0.8], 1280.0 )
 
 //      node1,2, up,  nseg    R     {width,height}
 //s.ring( [0.0,0.0,4.0], zvec, xvec, 16, 100.0, [4.0,4.0], "Steel" )

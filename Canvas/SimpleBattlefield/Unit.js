@@ -154,7 +154,7 @@ function smoothstep_sqrt(x){ return 0.5*( x*Math.sqrt( 1 + x*x ) + 1 ); }
 
 var Unit = function (x, y, N, type ) {   
     this.pos     = new Vec2(x,y); 
-    //this.dir     = Vec2(0.0,0.0); 
+    this.dir     = Vec2(1.0,0.0); 
     this.type    = type;
     this.N       = N;
     this.N_wound = 0;
@@ -289,4 +289,13 @@ Army.prototype.addUnitLine = function( n, p0, p1, type, N ){
         //console.log( this.units[this.units.length-1].pos );
         x+=dx; y+=dy;
     }
+}
+
+function attack_meele(attacker, defender){
+    let d = new Vec2(); 
+    d.set_subv(attacker.pos,defender.pos);
+    let catt = d.dot(attacker.dir);
+    let cdef = d.dot(defender.dir);
+    
+    
 }
