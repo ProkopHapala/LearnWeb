@@ -1,3 +1,6 @@
+"use strict";
+
+
 var time = 0.0;
 
 // noise generation:   http://paulbourke.net/fractals/noise/
@@ -160,6 +163,9 @@ var obj1     = null;
 var tx_xyzq = null;
 var tx_cLJ  = null;
 
+
+var atomtypes = null;
+
 var projectionMatrix = mat4.create();
 var modelViewMatrix  = mat4.create(); mat4.translate  ( modelViewMatrix,  modelViewMatrix, [ 0.0, 0.0, -4.0] );
 
@@ -302,7 +308,16 @@ function main() {
     }
     requestAnimationFrame(render);
 
+    //updateScene(doc){
+
 };
+
+function updateScene(doc){
+    console.log("updateScene()");
+    atomtypes = parseAtoms    ( document.getElementById('txtAtomTypes'    ).value );
+    //atoms     = parseAtomTypes( document.getElementById('txtAtoms').value );
+    drawScene(gl, programInfo, deltaTime);
+}
 
 function isPowerOf2(value) {
   return (value & (value - 1)) == 0;
