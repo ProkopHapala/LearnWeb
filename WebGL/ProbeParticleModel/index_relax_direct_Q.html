@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>WebGL Demo</title>
+
+<style>
+white-space: nowrap;  
+overflow: auto;
+body {background-color: powderblue;}
+h1   {color: blue;}
+p    {color: red;}
+</style>
+
+    <!--link rel="stylesheet" href="../webgl.css" type="text/css"-->
+</head>
+<script src="../../js_libs/gl-matrix.js"></script>
+<script src="../../js_libs/WebGL_aux.js"></script>
+<script src="../../SimSim/math/glmatrix_aux.js"></script>
+<body onLoad="main()">
+    <canvas id="glcanvas" width="512" height="512"></canvas>
+    <!--div style="width: 600px;height: 10px;" id="GLScreen"></div></div-->
+    <!--a href="" id="urlResult">Save</a-->
+    <!--select id="slPrimitives" onChange="selectText(this)">
+        <option value="objSpaceShip1"  selected="selected" >SpaceShip1</option>
+        <option value="objSpaceShip2"                      >SpaceShip2</option>
+        <option value="objSpaceShip3"                      >SpaceShip3</option>
+    </select>
+    <object data="data/SpaceShip1.js"  id="objSpaceShip1" style="visibility: hidden; width: 1px; height: 1px"></object>
+    <object data="data/SpaceShip2.js"  id="objSpaceShip2" style="visibility: hidden; width: 1px; height: 1px"></object>
+    <object data="data/SpaceShip3.js"  id="objSpaceShip3" style="visibility: hidden; width: 1px; height: 1px"></object>
+    </-->
+    </BR>
+    <button type="run" onclick="updateScene(this)" >update</button>
+    </BR>
+    Parameters: </BR>
+    <input id="inp_dfrenorm"  type="number" step="0.01" value="0.1"     > dfrenorm [Hz/(eV/A^2)] <br/>
+    <input id="inp_dfmin"     type="number" step="0.01" value="0.0"     > dfmin    [Hz]          <br/>
+    <input id="inp_z0"     type="number" step="0.1"     value="2.8"     > z image [A]    <br/>
+    <input id="inp_Qtip"   type="number" step="0.1"     value="-0.2"     > Qtip    [e]    <br/>
+    <input id="inp_Krad"   type="number" step="0.5"     value="20.0"    > Krad    [N/m]  <br/>
+    <input id="inp_Klat"   type="number" step="0.1"     value="0.25"    > Klat    [N/m]  <br/>
+    <input id="inp_Rlever" type="number" step="0.1"     value="4.0"     > Rlever  [A]    <br/>
+    <input id="inp_dz"     type="number" step="0.01"    value="0.1"     > z step  [A]    <br/>
+    <input id="inp_dt"     type="number" step="0.01"    value="0.15"    > relax time step<br/>
+    <input id="inp_cdamp"  type="number" step="0.01"    value="0.9"  min="0.0" max="1.0" > relax inertia  <br/>
+    <input id="inp_fconv"  type="number" step="0.00001" value="0.0001"  > F_conv [eV/A] <br/>
+    <input id="inp_fmax"   type="number" step="0.01"    value="0.1"     > F_max  [eV/A] <br/>
+    Geometry: </BR>
+    </div>
+        <div style="width: 400px;">
+        <!--textarea id="txtAtoms" cols="100" rows="30" wrap="off" onChange="updateScene(this)"-->
+        <textarea id="txtAtoms" cols="100" rows="10" wrap="off">
+   C     -1.911052     -2.056890      0.040701
+   C     -3.324161     -1.801760      0.012341
+   C     -1.400179     -3.406807      0.002460
+   C     -4.236601     -2.906591     -0.030440
+   C     -2.319500     -4.513390     -0.060960
+   O     -3.696921     -4.206737      0.045420
+   O     -5.474712     -2.804408     -0.178980
+   O     -2.035912     -5.716281     -0.271500
+   H     -3.405876      1.638516     -0.072580
+   H     -4.943164     -0.295317     -0.079360
+   H     -2.203101      3.134974     -0.111240
+   C     -1.004456     -0.939617      0.017880
+   C     -1.545482      0.414294      0.001600
+   C     -2.972910      0.613530     -0.064019
+   C     -3.844008     -0.464438     -0.070761
+   C     -1.118562      2.905987     -0.097600
+   H      3.183349     -1.300057     -0.091880
+   H      1.977953     -2.801508     -0.117720
+   H      0.411386     -4.688888     -0.125458
+   C      0.419768     -1.199915     -0.009080
+   C      0.893510     -2.571502     -0.104760
+   C      0.012362     -3.646255     -0.109180
+   H      4.719081      0.635717     -0.096680
+   H     -0.638353      5.023843     -0.119840
+   C      1.685735      2.393748      0.041600
+   C      0.780294      1.275365      0.018220
+   C      1.173591      3.743234      0.009621
+   C      3.099279      2.140785      0.006200
+   C     -0.643720      1.535589     -0.003380
+   C      1.321585     -0.078496     -0.004820
+   C      4.010354      3.247154     -0.033540
+   C      2.091301      4.850838     -0.057580
+   C      2.749486     -0.275400     -0.078640
+   C      3.619826      0.803791     -0.084700
+   C     -0.238533      3.981625     -0.102560
+   O      3.468417      4.547227      0.045580
+   O      5.248749      3.148035     -0.179800
+   O      1.803995      6.052622     -0.271640
+        </textarea></BR>
+    </div>
+    Force Field Parameters: </BR>
+    </div>
+        <div style="width: 500px;">
+        <!--textarea id="txtAtomTypes" cols="100" rows="30" wrap="off" onChange="updateScene(this)"-->
+        <textarea id="txtAtomTypes" cols="100" rows="10" wrap="off">
+H	1.48700	0.00068	;		abalone	AMBER	2003	OPLS																		
+He	1.48150	0.00095	;		abalone	AMBER	2003	OPLS																		
+Li	2.00000	0.01000	;		abalone	AMBER	2003	OPLS																		
+Be	2.00000	0.01000	;																							
+B	2.08000	0.00373	;		abalone	AMBER	2003	OPLS																		
+C	1.90800	0.00373	;		abalone	AMBER	2003	OPLS																		
+N	1.78000	0.00737	;		abalone	AMBER	2003	OPLS
+O	1.66120	0.00911	;		abalone	AMBER	2003	OPLS
+F	1.75000	0.00265	;		abalone	AMBER	2003	OPLS
+Ne	1.54350	0.00364	;		abalone	AMBER	2003	OPLS
+Na	2.77000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Mg	2.42000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Al	2.40000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Si	1.90000	0.02549	;		Gromos	Si	J.	Chem.																		
+P	2.10000	0.00867	;		abalone	AMBER	2003	OPLS																		
+S	2.00000	0.01084	;		abalone	AMBER	2003	OPLS																		
+Cl	1.94800	0.01149	;		abalone	AMBER	2003	OPLS																		
+Ar	1.88050	0.01234	;		abalone	AMBER	2003	OPLS																		
+K	3.02000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Ca	2.78000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Sc	2.62000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Ti	2.44000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+V	2.27000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Cr	2.23000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Mn	2.25000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Fe	2.27000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Co	2.25000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Ni	2.23000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Cu	2.23000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Zn	2.24000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Ga	2.41000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Ge	2.32000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+As	2.25000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Se	2.18000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Br	2.22000	0.01388	;																							
+Kr	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Rb	3.15000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Sr	2.94000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Y	2.71000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Zr	2.57000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Nb	2.46000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Mo	2.39000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Tc	2.37000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Ru	2.35000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Rh	2.32000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Pd	2.35000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Ag	2.37000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Cd	2.37000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+In	2.53000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Sn	2.46000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Sb	2.41000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Te	2.36000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+I	2.35000	0.01735	;																							
+Xe	2.18150	0.02434	;																							
+Cs	3.30000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Ba	3.05000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+La	2.81000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Ce	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Pr	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Nd	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Pm	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Sm	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Eu	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Gd	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Tb	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Dy	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Ho	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Er	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Tm	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Yb	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Lu	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Hf	2.52000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Ta	2.42000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+W	2.36000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Re	2.35000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Os	2.33000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Ir	2.34000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Pt	2.37000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Au	2.41000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Hg	2.25000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Tl	2.53000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Pb	2.53000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Bi	3.52000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Po	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+At	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Rn	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Fr	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Ra	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Ac	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Th	2.75000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Pa	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+U	2.65000	0.01000	;		Req	is	taken	from:	Batsanov,	S.	S.,	Van	der	Waals	Radii	of	Elements,	Inorganic	Materials,	2001,	Vol	37,	PP	871-885,	Nr.	9
+Np	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS
+Pu	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS	
+Am	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS	
+Cm	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS	
+Bk	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Cf	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Es	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Fm	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Md	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+No	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Lr	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Rf	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Db	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Sg	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Bh	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Hs	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Mt	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Ds	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Rg	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Cn	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Uut	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Fl	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Uup	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Lv	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Uus	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+Uuo	2.00000	0.01000	;		VALUES	ARE	MEANINGLESS																			
+        </textarea></BR>
+    </div>
+  <script src="ProbeParticleModel_relax_direct_Q.js"></script>
+</body>
+</html>
