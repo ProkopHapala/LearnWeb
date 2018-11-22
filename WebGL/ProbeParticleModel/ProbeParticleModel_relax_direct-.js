@@ -200,7 +200,6 @@ function buildShader(mods){
             fsSource_ = fsSource_.replace( "MOD_"+key, mods[key] );
         }
     }
-
     //console.log( "fsSource: ", fsSource_ );
 
     shaderProgram = initShaderProgram(gl, vsSource, fsSource_ );
@@ -235,20 +234,11 @@ function buildShader(mods){
 
 function parseAtomTypes( typeStr ){
     let lines = typeStr.split('\n');
-    //console.log( "typeStr ", typeStr);
-    //let rs = new Float32Array( rs.length );
-    //let es = new Float32Array( rs.length );
     let atomTypes = {};
     //console.log("lines =",lines);
     for(let i=0; i<lines.length; i++){
         let tmp = lines[i].split(';')[0];
         //console.log("i,tmp ",i,tmp);
-        //let wds = tmp.split();
-        //let wds = tmp.split(/\s+/); 
-        //let wds = tmp.split(/\S+/g); 
-        //let wds = tmp.split(/\S+/g); 
-        //let wds = tmp.match(/\S+/g); // see https://blog.abelotech.com/posts/split-string-into-tokens-javascript/
-        //let wds = tmp.match( /[^\s]+/g);
         let wds = tmp.match(/[^\s\t]+/g ); // see https://stackoverflow.com/questions/8441915/tokenizing-strings-using-regular-expression-in-javascript
         if( wds != null ){
             //console.log("i,tmp,wds ",i,tmp,wds);
@@ -277,13 +267,15 @@ function parseAtoms( atomStr, atomTypes ){
             //console.log("i,tmp,wds ",i,tmp,wds);
             let label = wds[0];
             labels.push(label);
-            if(wds.length>4){
-                let x = parseFloat(wds[1]);
-                let y = parseFloat(wds[2]);
-                let z = parseFloat(wds[3]);
-                let q = parseFloat(wds[4]);
+            if(wds.length>3){
+                let x,y,z,q,r,e;
+                x = parseFloat(wds[1]);
+                y = parseFloat(wds[2]);
+                z = parseFloat(wds[3]);
+                if(wds.length>4){ q=parseFloat(wds[4]); }else{ q=0.0; };
+                //let q = parseFloat(wds[4]);
                 xyzqs.push([ x,y,z,q ]);
-                let r,e;
+                //let r,e;
                 if(wds.length>5){ r=parseFloat(wds[5]); }else{ r=atomTypes[label][0]; };
                 if(wds.length>6){ e=parseFloat(wds[6]); }else{ e=atomTypes[label][1]; };
                 res.push([r,e]);
@@ -294,7 +286,7 @@ function parseAtoms( atomStr, atomTypes ){
     return [ labels, xyzqs, res];
 }
 
-function updateAllParams(doc){
+function updateGeomParams(doc){
     atomTypes             = parseAtomTypes( document.getElementById("txtAtomTypes"        ).value );
     [alabels, xyzqs, res] = parseAtoms    ( document.getElementById('txtAtoms' ).value, atomTypes );
     let c612s  = getBuff_cLJ( res, 1.6612, 0.009106  );
@@ -304,13 +296,14 @@ function updateAllParams(doc){
     //console.log( "xyzqs_ ", xyzqs_ );
     tx_cLJ     = texture1DFromFloat32Array_RG32F  ( gl, c612s, natoms );
 
-    //buildShader(mods);
+    buildShader( {"natoms": alabels.length } );
     //console.log( c612s );
 }
 
 function updateScene(doc){
-    console.log( "updateScene", doc );
-    updateAllParams(doc);
+    //console.log( "updateScene", doc );
+    updateGeomParams(doc);
+    
     needRefresh = true;
 }
 
@@ -337,7 +330,7 @@ function updateUniforms(){
     inps.Klat *= -1.0;
     inps.Krad *= -1.0;
     inps["f2conv"] = inps.fconv*inps.fconv;
-    inps["f2max" ] = inps.fmax *inps.fmax;   console.log( "inps.f2max", inps.f2max );
+    inps["f2max" ] = inps.fmax *inps.fmax;   //console.log( "inps.f2max", inps.f2max );
     inps.z0 += inps.Rlever;
     console.log(inps);
     //console.log("inp_z", inps.z0    );
@@ -373,11 +366,9 @@ function main() {
     if (!gl) { alert('Unable to initialize WebGL. Your browser or machine may not support it.'); return; }
     //gl.getExtension('OES_texture_float_linear');
 
-    updateAllParams();
-    buildShader( {"natoms": alabels.length } );
+    updateGeomParams();
 
     obj1     = new GLObject( gl ); obj1.fromVertNormUVind( Obj1.verts, null, Obj1.UVs, Obj1.inds );
-
     var then = 0;
 
     // Draw the scene repeatedly
@@ -402,7 +393,7 @@ function isPowerOf2(value) {
 // Draw the scene.
 function drawScene(gl, programInfo) {
 
-    console.log("drawScene");
+    //console.log("drawScene");
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
     gl.clearDepth(1.0);                 // Clear everything
@@ -415,20 +406,14 @@ function drawScene(gl, programInfo) {
     const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
 
     mat4.perspective( projectionMatrix, 45.0*Math.PI/180.0, aspect, 0.1, 100.0  );
-    //mat4.rotate(modelViewMatrix, modelViewMatrix,  cubeRotation,     [0, 0, 1]);
-    //mat4.rotate(modelViewMatrix, modelViewMatrix,  cubeRotation*0.7, [0, 1, 0]);
-
     gl.activeTexture(gl.TEXTURE0);   gl.bindTexture(gl.TEXTURE_2D, tx_xyzq );
     gl.activeTexture(gl.TEXTURE1);   gl.bindTexture(gl.TEXTURE_2D, tx_cLJ  );
 
-    //console.log( " txAtoms: ",programInfo.uniformLocations.txAtoms , "txLJ: ",programInfo.uniformLocations.txLJ );
     gl.uniform1i( programInfo.uniformLocations.txAtoms, 0);
     gl.uniform1i( programInfo.uniformLocations.txLJ,    1);
-    //gl.uniform1i( programInfo.uniformLocations.uSampler, 0);
 
     gl.uniformMatrix4fv( programInfo.uniformLocations.projectionMatrix, false, projectionMatrix );
     gl.uniformMatrix4fv( programInfo.uniformLocations.modelViewMatrix,  false, modelViewMatrix  );
-    //gl.uniform1f( programInfo.uniformLocations.time, time );   time+=0.1;
     
     updateUniforms();
 
