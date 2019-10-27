@@ -1,20 +1,84 @@
 <!DOCTYPE html>
 <html>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.js"></script>
-    <script src="../../../js_libs/ThreeJS/GLSLscreen.js"></script>
     <head>
-        <title>05.10 - Custom fragment shader</title>
+        <title>Custom fragment shader</title>
         <style> body { margin: 0; overflow: scroll;; } </style>
     </head>
-    <script>function initThis(){ init_GLSLScreen("GLScreen","txtScene"); } </script>
-    <body onLoad="initThis()">
-        <select id="slPrimitives" onChange="selectPrimitive(this)">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.js"></script>
+    <script src="../../../js_libs/ThreeJS/GLSLscreen.js"></script>
+<script> 
+"use strict";
+
+console.log( "// ============== BEGIN index.html " );
+
+fragCodeParts.primitives = "//Primitives";
+fragCodeParts.scene      = "//Scene";
+fragCodeParts.rayTracer  = "//RayTracer";
+
+function selectPixelMap( element ){
+    fragCodeParts.pixelMap = element.value;
+    updateShader( joinFragCode_default() );
+}
+
+function selectScene( element ){
+    fragCodeParts.scene    = element.value;
+    document.getElementById( "txtScene" ).value = fragCodeParts.scene;
+    updateShader( joinFragCode_default() );
+}
+
+function initThis(data){
+    //bAnimate = false;
+    let screenBoxId = "GLScreen";
+    //genFragCodeFunc = genFragCode;
+    
+    fragCodeParts.pixelMap = document.getElementById("slPixelMap").value;
+    fragCodeParts.scene    = document.getElementById("slScene"   ).value;
+    document.getElementById( "txtScene" ).value = fragCodeParts.scene;
+
+    let frag_code   = joinFragCode_default(); 
+    //console.log( frag_code );
+    //return;
+    let screenBox = document.getElementById(screenBoxId);
+    init_GLSLScreen( screenBox, frag_code );
+}
+
+//document.addEventListener('DOMContentLoaded', function(){ initThis(); }, false);
+//window.addEventListener('load', function(){ initThis(); } );
+
+async function loadPage(){
+    // https://medium.com/javascript-in-plain-english/async-await-javascript-5038668ec6eb
+    // https://stackoverflow.com/questions/31710768/how-can-i-fetch-an-array-of-urls-with-promise-all
+    fragCodeParts.primitives = await fetch('Primitives.glslf').then( r => r.text() );
+    fragCodeParts.rayTracer  = await fetch('RayTracer.glslf' ).then( r => r.text() );
+  // see also File Reader API : https://developer.mozilla.org/en-US/docs/Web/API/FileReader
+    //.contentDocument.body.childNodes[0].innerHTML
+    //fragCodeParts.primitives = document.getElementById("txtPrimitives").contentDocument.body.childNodes[0].innerHTML;
+    //fragCodeParts.rayTracer  = document.getElementById("txtRayTracer").contentDocument.body.childNodes[0].innerHTML;
+    //fragCodeParts.primitives = document.getElementById("txtPrimitives").contentDocument.body.innerText;
+    //fragCodeParts.rayTracer  = document.getElementById("txtRayTracer").contentDocument.body.innerText;
+
+    console.log( " HEY " );
+    console.log( fragCodeParts.primitives );
+    console.log( fragCodeParts.rayTracer );
+    console.log( " HEY HEY " );
+    //return {};
+    return fragCodeParts;
+}
+
+
+//loadPage().then( data => initThis(data) );
+</script>
+    <!-- <body onLoad="loadPage()"> -->
+    <body onLoad="loadPage().then( data => initThis(data) )">
+    <!-- <body onLoad="init_GLSLScreen( screenBox, '' )"> -->
+    <!-- <body> -->
+        <select id="slScene" onChange="selectScene(this)">
           <option value="Sphere   SURF1 = Sphere  ( vec3(0.0,0.0,0.0), 1.0 );"     selected="selected"  >sphere   </option>
           <option value="Cylinder SURF1 = Cylinder( vec3(0.0,-1.0,0.0), vec3(0.0,1.0,0.0), 0.5      );" >cylinder </option>
           <option value="Cone     SURF1 = Cone    ( vec3(0.0,0.0,-1.0), vec3(0.0,0.0,1.0), 1.0, 0.9 );" >cone     </option>
           <option value="Sphere   SURF1 = Sphere  ( vec3(0.0,0.0,0.0), 1.0 );"                          >capsula  </option>
         </select>
-        <select id="slPrimitives" onChange="selectPixelMap(this)">
+        <select id="slPixelMap" onChange="selectPixelMap(this)">
           <option value="vec4( (c_diffuse + c_specular*mat.gloss)*mat.color + vec3(0.1,0.1,0.2)*mat.color, 1.0 );"  selected="selected" >phong  </option>
           <option value="vec4( vec3(   (hit.x-8.0)*0.25  ), 1.0 ); "                                                                    >t      </option>
           <option value="vec4( vec3(log(hit.x-8.0)       ), 1.0 ); "                                                                    >log(t) </option>
@@ -24,10 +88,11 @@
         </select>
         <div style="width: 640px;height: 480px;" id="GLScreen"></div>
         <div style="width: 1200px;">
-             Scene Source    </BR> <textarea id="txtScene" cols="40" rows="5" onChange="updateShader(this)"></textarea></BR> 
-             RayTracer.glslf </BR> <object data="RayTracer.glslf"  id="txtRayTracer"></object> </BR> 
-             Primitives.glslf</BR> <object data="Primitives.glslf" id="txtPrimitives"></object> </BR> 
+            Scene Source    </BR> <textarea id="txtScene" cols="40" rows="5" onChange="selectScene(this)">//Empty </textarea></BR> 
+            <!-- RayTracer.glslf </BR> <object data="RayTracer.glslf"  id="txtRayTracer"></object> </BR> -->
+            <!-- Primitives.glslf</BR> <object data="Primitives.glslf" id="txtPrimitives"></object> </BR> -->
+            <!-- RayTracer.glslf  </BR> <iframe id="txtRayTracer" style="display:none" src="RayTracer.glslf" ></iframe></BR>  -->
+            <!-- Primitives.glslf </BR> <iframe id="txtPrimitives" style="display:none" src="Primitives.glslf" ></iframe></BR>  -->
         </div>
-        <script>selectPrimitive(document.getElementById("slPrimitives"));</script>
     </body>
 </html>

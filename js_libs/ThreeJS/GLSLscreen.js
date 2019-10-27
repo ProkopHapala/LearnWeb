@@ -2,9 +2,14 @@
 //   THREE JS MAIN
 // =====================
 
+// import in browser
+// https://stackoverflow.com/questions/950087/how-do-i-include-a-javascript-file-in-another-javascript-file
+
 // ----  Globals
 
 "use strict";
+
+var bAnimate = true;
 
 var renderer;
 var scene;
@@ -17,7 +22,11 @@ var mousePosOld;
 var basicShader;
 var mesh;
 
-var str_PixelMap = "vec4( (c_diffuse + c_specular*mat.gloss)*mat.color + vec3(0.1,0.1,0.2)*mat.color, 1.0 );";
+var fragCodeParts = {};
+
+//var genFragCodeFunc = null;
+
+var str_default_PixelMap = "vec4( (c_diffuse + c_specular*mat.gloss)*mat.color + vec3(0.1,0.1,0.2)*mat.color, 1.0 );";
 
 // ---- Functions
 
@@ -44,39 +53,29 @@ function render() {
 
     renderer.render(scene, camera);
     uniforms.time.value += 0.05;
-    requestAnimationFrame(render);
+    if( bAnimate ) requestAnimationFrame(render);
 }
 
-function selectPrimitive(element) {
-    console.log(element.value);
-    txtScene = "vec4 scene( Ray ray ){\n\tvec4 hit = vec4( POSITIVE_INF, vec3(0.0) );\n\t" + element.value + "\n\tvec2 ts1;\n\tADD( SURF1 );\n\treturn hit;\n}";
-    document.getElementById("txtScene").value = txtScene;
-    updateShader(document.getElementById("txtScene"));
+function wrapSceneCode( inner_code ){
+    return "vec4 scene( Ray ray ){\n\tvec4 hit = vec4( POSITIVE_INF, vec3(0.0) );\n\t" 
+        +  inner_code 
+        +  "\n\tvec2 ts1;\n\tADD( SURF1 );\n\treturn hit;\n}";
 }
 
-function selectPixelMap(element) {
-    console.log(element.value);
-    str_PixelMap = element.value;
-    updateShader(document.getElementById("txtScene"));
+function joinFragCode_default(){
+    let rayTracer  = fragCodeParts.rayTracer.replace("OUTPUT_PIXEL", fragCodeParts.pixelMap );
+    let scene      = wrapSceneCode( fragCodeParts.scene );
+    return  "// ===== primives  \n" + fragCodeParts.primitives
+          + "// ===== scene     \n" + scene
+          + "// ===== rayTracer \n" + rayTracer;
 }
 
-function updateShader(element) {
-    //console.log("updateShader");
-    //console.log(element.value);
-
-    let shader_code = "";
-    // see:
-    // http://stackoverflow.com/questions/6348207/making-a-paragraph-in-html-contain-a-text-from-a-file
-    // http://stackoverflow.com/questions/36659202/read-data-in-html-object-tag
-    shader_code += document.getElementById("txtPrimitives").contentDocument.body.childNodes[0].textContent;
-    shader_code += element.value;
-    //shader_code += document.getElementById("txtRayTracer").contentDocument.body.childNodes[0].textContent;
-    shader_code += document.getElementById("txtRayTracer").contentDocument.body.childNodes[0].textContent.replace("OUTPUT_PIXEL", str_PixelMap);
+function updateShader( frag_code ) {
 
     let material = new THREE.ShaderMaterial({
         uniforms: uniforms,
         vertexShader: basicShader.vertexShader,
-        fragmentShader: shader_code,
+        fragmentShader: frag_code,
     });
 
     try {
@@ -91,27 +90,31 @@ function updateShader(element) {
     scene.add(mesh);
 }
 
-function init_GLSLScreen(screenBoxId, shaderBoxId) {
-    let screenBox = document.getElementById(screenBoxId);
+function init_GLSLScreen( screenBox, shader_code ) {
+
+    //console.log( "BEGIN init_GLSLScreen " );
+    
     document.onmousemove = handleMouseMove;
-    console.log(screenBoxId, shaderBoxId);
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    
+    scene    = new THREE.Scene();
+    camera   = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
     renderer = new THREE.WebGLRenderer();
     renderer.setClearColor(0x000000, 1.0);
     //renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setSize(screenBox.clientWidth, screenBox.clientHeight);
+    renderer.setSize( screenBox.clientWidth, screenBox.clientHeight );
 
     // SHADER
     basicShader = THREE.ShaderLib['normal'];
-    uniforms = {
+    uniforms    = {
         time: { value: 1.0 },
         resolution: { value: new THREE.Vector2() },
         camMat: { value: new THREE.Matrix3() }
     };
     uniforms.resolution.value.x = renderer.domElement.width;
     uniforms.resolution.value.y = renderer.domElement.height;
-    updateShader(document.getElementById(shaderBoxId));
+
+    //updateShader(document.getElementById(shaderBoxId));
+    updateShader( shader_code );
 
     camera.position.x = 0.0;
     camera.position.y = 0.0;
@@ -120,7 +123,7 @@ function init_GLSLScreen(screenBoxId, shaderBoxId) {
 
     //document.body.appendChild(renderer.domElement);
 
-    screenBox.appendChild(renderer.domElement);
+    screenBox.appendChild( renderer.domElement );
     control = new function () {
         this.rotationSpeed = 0.005;
         this.scale = 1;
@@ -128,6 +131,8 @@ function init_GLSLScreen(screenBoxId, shaderBoxId) {
     //addControls(control);
     // call the render function
     render();
+
+    //console.log( "END init_GLSLScreen " );
 }
 
 //window.onload = init; // calls the init function when the window is done loading.
