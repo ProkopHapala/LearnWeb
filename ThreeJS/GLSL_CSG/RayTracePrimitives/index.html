@@ -50,17 +50,17 @@ async function loadPage(){
     // https://stackoverflow.com/questions/31710768/how-can-i-fetch-an-array-of-urls-with-promise-all
     fragCodeParts.primitives = await fetch('Primitives.glslf').then( r => r.text() );
     fragCodeParts.rayTracer  = await fetch('RayTracer.glslf' ).then( r => r.text() );
-  // see also File Reader API : https://developer.mozilla.org/en-US/docs/Web/API/FileReader
+    // see also File Reader API : https://developer.mozilla.org/en-US/docs/Web/API/FileReader
     //.contentDocument.body.childNodes[0].innerHTML
     //fragCodeParts.primitives = document.getElementById("txtPrimitives").contentDocument.body.childNodes[0].innerHTML;
     //fragCodeParts.rayTracer  = document.getElementById("txtRayTracer").contentDocument.body.childNodes[0].innerHTML;
     //fragCodeParts.primitives = document.getElementById("txtPrimitives").contentDocument.body.innerText;
     //fragCodeParts.rayTracer  = document.getElementById("txtRayTracer").contentDocument.body.innerText;
 
-    console.log( " HEY " );
-    console.log( fragCodeParts.primitives );
-    console.log( fragCodeParts.rayTracer );
-    console.log( " HEY HEY " );
+    //console.log( " HEY " );
+    //console.log( fragCodeParts.primitives );
+    //console.log( fragCodeParts.rayTracer );
+    //console.log( " HEY HEY " );
     //return {};
     return fragCodeParts;
 }

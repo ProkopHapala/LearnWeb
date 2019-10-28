@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Custom fragment shader</title>
+        <style> body { margin: 0; overflow: scroll;; } </style>
+    </head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.js"></script>
+    <script src="../../../js_libs/ThreeJS/GLSLscreen.js"></script>
+    <script src="../../../js_libs/ThreeJS/Ray.js"></script>
+<script> 
+"use strict";
+
+console.log( "// ============== BEGIN index.html " );
+
+function selectPixelMap( element ){
+    fragCodeParts.pixelMap = element.value;
+    updateShader( joinFragCode_default() );
+}
+
+function selectScene( element ){
+    fragCodeParts.scene    = element.value;
+    document.getElementById( "txtScene" ).value = fragCodeParts.scene;
+    updateShader( joinFragCode_default() );
+}
+
+function initThis(){
+
+    var Vec3 = THREE.Vector3;
+
+    //var sph1 = new Sphere(new Vec3(1.0,1.0,1.0), 1.5 );
+    //console.log( sph1.constructor.name );
+    //console.log( Sphere.prototype.constructor.name);
+
+    //return;
+    //let frag_code  = makeFragCode( [ sph1 ], pixelMaps["phong"] );
+
+    let parts = {};
+    let frag_code  = makeFragCode( [ new Sphere(new Vec3(1.5,1.5,1.5), 0.5 ), new Sphere(new Vec3(0.0,0.0,0.0), 2.0 ) ], pixelMaps["phong"], parts );
+    document.getElementById( "txtScene" ).value = parts.scene;
+
+    //console.log( parts );
+
+    //let frag_code  = makeFragCode( [  ], pixelMaps["phong"] );
+
+    //console.log( frag_code );
+    //return;
+
+    let screenBoxId = "GLScreen";
+    let screenBox = document.getElementById(screenBoxId);
+    init_GLSLScreen( screenBox, frag_code );
+}
+
+</script>
+    <body onLoad="initThis()">
+    <!-- <body> -->
+        <select id="slScene" onChange="selectScene(this)">
+          <option value="Sphere   SURF1 = Sphere  ( vec3(0.0,0.0,0.0), 1.0 );"     selected="selected"  >sphere   </option>
+          <option value="Cylinder SURF1 = Cylinder( vec3(0.0,-1.0,0.0), vec3(0.0,1.0,0.0), 0.5      );" >cylinder </option>
+          <option value="Cone     SURF1 = Cone    ( vec3(0.0,0.0,-1.0), vec3(0.0,0.0,1.0), 1.0, 0.9 );" >cone     </option>
+          <option value="Sphere   SURF1 = Sphere  ( vec3(0.0,0.0,0.0), 1.0 );"                          >capsula  </option>
+        </select>
+        <select id="slPixelMap" onChange="selectPixelMap(this)"></select>
+        <div style="width: 640px;height: 480px;" id="GLScreen"></div>
+        <div style="width: 1200px;">
+            Scene Source    </BR> <textarea id="txtScene" cols="40" rows="5" onChange="selectScene(this)">//Empty </textarea></BR> 
+        </div>
+    </body>
+</html>

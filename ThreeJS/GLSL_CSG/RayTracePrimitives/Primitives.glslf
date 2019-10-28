@@ -222,5 +222,5 @@ vec3 normal( Cone cone, vec3 p ){
     }
 }
 
-#define ADD( SURF ) { ts1 = ray_ts( SURF, ray ); if( ts1.x < hit.x ){ hit = vec4(ts1.x, normal(SURF,point(ray,ts1.x))); } }
-#define SUB( SURF ) { vec2 ts2 = ray_ts( SURF, ray ); if( (ts1.x>ts2.x) && (ts1.x<ts2.y) ){ if( ts2.y<ts1.y ){ hit = vec4( ts2.y, normal(SURF,point(ray,ts2.y))*-1.0 ); }else{ hit = vec4( POSITIVE_INF, vec3(0.0) ); } } }
+#define ADD( SURF ) {      ts1 = ray_ts( SURF, ray ); if(  ts1.x < hit.x                   ){                    hit = vec4(ts1.x, normal(SURF,point(ray,ts1.x))      ); } }
+#define SUB( SURF ) { vec2 ts2 = ray_ts( SURF, ray ); if( (ts1.x > ts2.x) && (ts1.x<ts2.y) ){ if( ts2.y<ts1.y ){ hit = vec4(ts2.y, normal(SURF,point(ray,ts2.y))*-1.0 ); }else{ hit = vec4( POSITIVE_INF, vec3(0.0) ); } } }
