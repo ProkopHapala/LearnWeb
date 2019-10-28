@@ -85,7 +85,7 @@ function updateShader( frag_code ) {
         console.log(" updateShader cannot remove Mesh1");
     };
 
-    mesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(100, 100), material);
+    mesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(160, 100), material);
     mesh.name = "Mesh1";
     scene.add(mesh);
 }

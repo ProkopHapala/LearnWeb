@@ -35,7 +35,7 @@ function initThis(){
     //let frag_code  = makeFragCode( [ sph1 ], pixelMaps["phong"] );
 
     let parts = {};
-    let frag_code  = makeFragCode( [ new Sphere(new Vec3(1.5,1.5,1.5), 0.5 ), new Sphere(new Vec3(0.0,0.0,0.0), 2.0 ) ], pixelMaps["phong"], parts );
+    let frag_code  = makeFragCode( [ new Sphere(new Vec3(1.5,1.5,1.5), 0.5 ), new Cylinder(new Vec3(0.0,0.0,0.0),new Vec3(1.0,1.0,1.0), 1.0 ) ], pixelMaps["phong"], parts );
     document.getElementById( "txtScene" ).value = parts.scene;
 
     //console.log( parts );

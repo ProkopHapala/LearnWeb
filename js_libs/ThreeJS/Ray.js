@@ -13,13 +13,24 @@ function glsl_vec4(v){ return `vec4(${float(v.x)},${v.y},${v.z},${v.w})`; }
 
 function glsl_var( obj, name ){ return obj.name + name + " = " + obj.glsl_new() +";"; }
 
-function glsl_add   ( obj ){ console.log(obj); return `ADD( `+obj.glsl_new() +` );` };
+function glsl_add   ( obj ){ return `ADD( `+obj.glsl_new() +` );` };
+function glsl_put   ( obj ){ return  glsl_var( obj, name )+"; HITS(hits_tmp,"+name+"); hits = or(hits,hits_tmp);" };
 function glsl_define( obj ){ return obj.glsl_type() +'\n'+ obj.glsl_dist() +'\n'+ obj.glsl_ray() +'\n'+ obj.glsl_normal(); };
 
 function glsl_scene( inner_code ){
     return "vec4 scene( Ray ray ){\n\tvec4 hit = vec4( POSITIVE_INF, vec3(0.0) );\n\t" 
         +  inner_code 
         +  "\n\treturn hit;\n}";
+}
+
+function glsl_scene2( inner_code ){
+    return `Hits scene( Ray ray ){
+    Hits hits,hits_tmp;
+    hits.hi = vec4(  POSITIVE_INF, vec3(0.0) );
+    hits.lo = vec4( -POSITIVE_INF, vec3(0.0) );
+    \n\t` 
+        +  inner_code 
+        +  "\n\treturn hits;\n}";
 }
 
 // ========== Sphere
@@ -33,7 +44,6 @@ class Sphere{
     }
     glsl_new(){ let spos=glsl_vec3(this.pos); return `Sphere( ${spos}, ${float(this.R)} )`;}
 
-//Sphere.glsl_name = `Sphere`;
 static glsl_type(){ return `struct Sphere{ vec3 p; float R; };`;}
 
 static glsl_dist(){ return `
@@ -47,95 +57,68 @@ vec2 ray_ts( Sphere sph, Ray ray ){
     vec3 op   = sph.p - ray.o;
     float b   = dot(op, ray.d);
     float det = b*b - dot(op,op) + sph.R*sph.R;
-    if (det<0.0) return vec2(POSITIVE_INF,POSITIVE_INF);
+    if (det<0.0) return vec2(POSITIVE_INF,-POSITIVE_INF);
     det       = sqrt(det);
     return vec2( b-det, b+det );
 }`;}
 
     static glsl_normal(){ return `\nvec3 normal( Sphere sph, vec3 p ){ return (p-sph.p)/sph.R; }`;}
 // https://stackoverflow.com/questions/51381966/how-do-i-use-a-static-variable-in-es6-class
-}
-
-/*
-//Sphere.glsl_name = `Sphere`;
-Sphere.glsl_type = function(){ return `struct Sphere{ vec3 p; float R; };`;};
-Sphere.glsl_dist = function(){ return `
-float dist2( Sphere sph, vec3 p ){
-    vec3 dp = p - sph.p;
-    return dot(dp,dp)-(sph.R*sph.R);
-}`;};
-Sphere.glsl_ray = function(){ return `
-vec2 ray_ts( Sphere sph, Ray ray ){
-    vec3 op   = sph.p - ray.o;
-    float b   = dot(op, ray.d);
-    float det = b*b - dot(op,op) + sph.R*sph.R;
-    if (det<0.0) return vec2(POSITIVE_INF,POSITIVE_INF);
-    det       = sqrt(det);
-    return vec2( b-det, b+det );
-}`;};
-Sphere.glsl_normal = function(){ return `vec3 normal( Sphere sph, vec3 p ){ return (p-sph.p)/sph.R; }`;};
-
-Sphere.prototype={
-    glsl_new:  function(){ let spos=glsl_vec3(this.pos); return `Sphere( ${spos}, ${this.R} )`;},
-} // Sphere.prototype
-
-*/
+} // Sphere
 
 
-/*
 // ========== Slab
 
-var Slab = function(dir,Cmin,Cmax){
-    this.dir  = dir;
-    this.Cmax = Cmin;
-    this.Cmin = Cmax;
-}
+class Slab{ 
+    constructor(dir,Cmin,Cmax){
+        this.dir  = dir;
+        this.Cmax = Cmin;
+        this.Cmin = Cmax;
+    }
+    glsl_new(){ let sdir=glsl_vec3(this.dir); return `Slab( ${sdir}, ${float(this.Cmin)}, ${float(this.Cmax)} );"`;}
 
-// static methods
-//Slab.glsl_name = `Slab`;
-Slab.glsl_type: function(){ return `struct Slab{ vec3 n; float Cmin; float Cmax; };`;},
-Slab.glsl_type: function(){ return `
+    static glsl_type(){ return `struct Slab{ vec3 n; float Cmin; float Cmax; };`;}
+
+static glsl_dist(){ return `
 float dist( Slab sl, vec3 p ){
     float c = dot(sl.n,p);
     if (c<sl.Cmin){ return sl.Cmin-c; } else if (c>sl.Cmax){ return c-sl.Cmax; } else { return -1.0; };
-}`;};
-Slab.glsl_type: function(){ return `
+}`;}
+
+static glsl_ray(){ return `
 vec2 ray_ts( Slab sl, Ray ray){
     float cnd = dot(sl.n, ray.d);
     float c   = dot(sl.n, ray.o);
     float t1  = -(c + sl.Cmin) / cnd;
     float t2  = -(c + sl.Cmax) / cnd;
     if(t1<t2){ return vec2(t1,t2); }else{ return vec2(t2,t1); };
-}`;};
-Slab.glsl_type: function(){ return `
-float ray_t( Slab sl, Ray ray){
-    vec2 ts = ray_ts( sl, ray);
-    if (ts.x>0.0){ return ts.x; }else{ return ts.y; };
-}`;};
-Slab.glsl_type: function(){ return `
+}`;}
+
+static glsl_normal(){ return `
 vec3 normal( Slab sl, vec3 p ){ 
     float c = dot(sl.n,p);
     if( c > 0.5*(sl.Cmin+sl.Cmax) ){ return sl.n; }else{ return -sl.n; } 
-}`;};
+}`;}
 
+} // Slab
 
-Slab.prototype={
-    glsl_new:  function(){ let sdir=glsl_vec3(this.dir); return `Slab( ${sdir}, ${this.Cmin}, ${this.Cmax} );"`;},
-} // Slab.prototype
 
 // ========== Cylinder
 
 //var = cylinder `Cylinder SURF1 = Cylinder( vec3(0.0,-1.0,0.0), vec3(0.0,1.0,0.0), 0.5      );`
 
-var Cylinder = function(pos1,pos2,R){
-    this.pos1 = pos1;
-    this.pos2 = pos2;
-    this.R    = R;
-}
+class Cylinder{
+    constructor(pos1,pos2,R){
+        this.pos1 = pos1;
+        this.pos2 = pos2;
+        this.R    = R;
+    }
+    glsl_new(){ let spos1=glsl_vec3(this.pos1); let spos2=glsl_vec3(this.pos2); return `Cylinder( ${spos1}, ${spos2}, ${float(this.R)} )`;}
 
 // static methods
-Cylinder.glsl_type = function(){ return `struct Cylinder{ vec3  a; vec3 b;  float R; };`;};
-Cylinder.glsl_type: function(){ return `
+static glsl_type(){ return `struct Cylinder{ vec3  a; vec3 b;  float R; };`;}
+
+static glsl_dist(){ return `
 float dist2( Cylinder cl, vec3 p ){
     // http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
     vec3  da  = p-cl.a;
@@ -144,9 +127,9 @@ float dist2( Cylinder cl, vec3 p ){
     vec3  dc  = cl.b-cl.a;
     float d2  = dot(aXb,aXb)/dot( dc,dc );
     return sqrt(d2) - cl.R;
-}`;};
+}`;}
 
-Cylinder.glsl_type = function(){ return `
+static glsl_ray(){ return `
 vec2 ray_ts( Cylinder cl, Ray ray ){
 
     vec3  cc  = 0.5*(cl.a+cl.b);
@@ -163,7 +146,7 @@ vec2 ray_ts( Cylinder cl, Ray ray ){
     float b = dot( oc, ray.d) - caoc*card;
     float c = dot( oc, oc   ) - caoc*caoc - cl.R*cl.R;
     float h = b*b - a*c;
-    if( h<0.0 ) return vec2(POSITIVE_INF,POSITIVE_INF);
+    if( h<0.0 ) return vec2(POSITIVE_INF,-POSITIVE_INF);
     h = sqrt(h);
     
     vec2 ts;
@@ -192,9 +175,9 @@ vec2 ray_ts( Cylinder cl, Ray ray ){
     }
 
     return ts;
-}`;};
+}`;}
 
-Cylinder.glsl_type = function(){ return `
+static glsl_normal(){ return `
 vec3 normal( Cylinder cl, vec3 p ){ 
     vec3  dc  = cl.b-cl.a;
     float h   = length(dc); 
@@ -208,15 +191,12 @@ vec3 normal( Cylinder cl, vec3 p ){
     }else {
         return normalize( dp - dc*c );
     }
-}`;};
+}`;}
 
-Cylinder.prototype={
-    glsl_new:  function(){ let spos1=glsl_vec3(this.pos1); let spos2=glsl_vec3(this.pos2); return `Cylinder( ${spos1}, ${spos2}, ${this.Cmax} );"`;},
-} // Cylinder.prototype
+} // Cylinder
+
 
 // ========== COMMON
-
-*/
 
 var glsl_pre = `
 #define PI 3.14159275358979
@@ -227,11 +207,34 @@ var glsl_pre = `
 struct Ray     { vec3 o;  vec3 d; };
 
 vec3 point( Ray r, float t ){ return r.o + t*r.d; }
+
+struct Hits{ vec4 hi; vec4 lo; };
+
 `;
 
 
 var glsl_macros = `
 #define ADD( SURF ){ vec2 ts1 = ray_ts( SURF, ray ); if(  ts1.x < hit.x ){ hit = vec4(ts1.x, normal(SURF,point(ray,ts1.x))); }  }
+
+#define NORMAL(surf,ray,hit) { hit.xyz=normal(surf,point(ray,hit.w)) }
+
+#define HITS(hits,surf) { vec2 ts=ray_ts( surf, ray ); hits.hi.w=ts.x; hits.lo.w=ts.y; if(ts.x<ts.y){ NORMAL(surf,ray,hit.hi); NORMAL(surf,ray,hit.lo) } }
+
+Hits or(Hits a,Hits b){
+    Hits ret;
+    ret.hi = (a.hi.w<b.hi.w) ? a.hi  :  b.hi ;
+    ret.lo = (a.lo.w>b.lo.w) ? a.lo  :  b.lo ;
+    return ret;
+}
+
+Hits and(Hits a,Hits b){
+    Hits ret;
+    ret.hi = (a.hi.w>b.hi.w) ? a.hi  :  b.hi ;
+    ret.lo = (a.lo.w<b.lo.w) ? a.lo  :  b.lo ;
+    return ret;
+}
+
+
 `;
 
 /*
